@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Edit template – CardHub{% endblock %}
+{% block head_extra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 pt-8 pb-12 space-y-6">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-[11px] text-slate-400">Editing template: <span class="font-semibold text-slate-100">{{ template.name }}</span> · {{ template.category }}</p>
+      <h1 class="text-xl font-semibold">Customise your card</h1>
+      <p class="text-[11px] text-slate-400">Live preview is on the left. Use the controls to the right to change text, fonts & colours.</p>
+    </div>
+    <div class="flex flex-wrap gap-2 text-[11px]">
+      <a href="{{ url_for('template_detail', template_id=template.id) }}" class="btn-ghost interactive-tap">Back to preview</a>
+    </div>
+  </header>
+
+  <div class="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-6 items-start">
+    <div class="space-y-3">
+      <div id="card-preview-wrapper" class="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 shadow-2xl">
+        <p class="text-[11px] font-medium text-slate-300 mb-2">Live preview <span class="text-slate-500">– Rating & comments are shown on the preview page, not here.</span></p>
+        <div id="card-preview" class="aspect-[4/3] rounded-2xl flex flex-col justify-between p-6 shadow-lg"
+             style="background-color: {{ template.bg_color }};{% if template.bg_image %} background-image: url('{{ template.bg_image }}'); background-size: cover; background-position: center;{% endif %}">
+          <div id="preview-label" class="text-xs text-slate-100/90 editable-text interactive-tap">
+            Custom invitation
+          </div>
+          <div>
+            <h2 id="preview-title" class="text-2xl font-semibold text-slate-900 editable-text interactive-tap" style="font-family: 'Poppins', system-ui;">
+              {{ template.title_text }}
+            </h2>
+            <p id="preview-line1" class="text-sm text-slate-800 editable-text interactive-tap">
+              {{ template.line1_text }}
+            </p>
+          </div>
+          <p id="preview-line2" class="text-sm text-slate-900 editable-text interactive-tap">
+            {{ template.line2_text }}
+          </p>
+        </div>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 space-y-3">
+        <p class="text-[11px] font-medium text-slate-300">Text colours</p>
+        <p class="text-[10px] text-slate-500">Use these colour pickers to change colours for the label, title and body lines. They work just like the background colour button.</p>
+      </div>
+
+        <div class="mt-3 space-y-1 text-[11px] text-slate-400">
+          <p>Selected text</p>
+          <div class="flex items-center gap-3">
+            <input type="color" id="active-text-color" value="#ffffff"
+                   class="h-9 w-16 rounded-lg border border-slate-700 bg-slate-900 interactive-tap" />
+            <p class="text-[10px] text-slate-500">Tap any text on the card preview, then use this to recolour just that text.</p>
+          </div>
+        </div>
+
+      <div class="flex flex-wrap gap-3 text-[11px]">
+        <button id="download-btn" class="btn-primary interactive-tap">Download as image</button>
+        <form method="post" action="{{ url_for('save_card', template_id=template.id) }}" class="inline">
+          <input type="hidden" name="title" id="hidden-title">
+          <input type="hidden" name="line1" id="hidden-line1">
+          <input type="hidden" name="line2" id="hidden-line2">
+          <input type="hidden" name="label" id="hidden-label">
+          <input type="hidden" name="bg" id="hidden-bg">
+          <button type="submit" class="btn-ghost interactive-tap">Save to profile</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <form id="editor-form" class="space-y-4">
+        <div class="space-y-2">
+          <label class="form-label">Small label (top-left)</label>
+          <input id="label-input" class="form-input" value="Custom invitation">
+          <p class="text-[10px] text-slate-500">This short text appears in the corner inside the card (e.g. “Wedding invite”, “Birthday party”).</p>
+        </div>
+        <div class="space-y-2">
+          <label class="form-label">Title</label>
+          <input id="title-input" class="form-input" value="{{ template.title_text }}">
+        </div>
+        <div class="space-y-2">
+          <label class="form-label">Line 1</label>
+          <input id="line1-input" class="form-input" value="{{ template.line1_text }}">
+        </div>
+        <div class="space-y-2">
+          <label class="form-label">Line 2</label>
+          <input id="line2-input" class="form-input" value="{{ template.line2_text }}">
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="form-label">Background colour</label>
+            <input type="color" id="bg-color" value="{{ template.bg_color }}"
+                   class="h-9 w-16 rounded-lg border border-slate-700 bg-slate-900 interactive-tap">
+          </div>
+          <div class="space-y-2 text-[11px]">
+            <label class="form-label">Background image (optional)</label>
+            <input type="file" id="bg-image" accept="image/*" class="block w-full text-[11px] text-slate-300">
+            <p class="text-[10px] text-slate-500">Upload a frame or photo to use as background. It stays only in your browser.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="form-label">Font family</label>
+            <select id="font-family" class="form-input">
+              <option value="Poppins, system-ui" selected>Poppins (modern)</option>
+              <option value="Playfair Display, serif">Playfair (elegant)</option>
+              <option value="Dancing Script, cursive">Dancing Script (handwritten)</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Title size</label>
+            <input type="range" id="title-size" min="20" max="40" value="28" class="w-full">
+            <p class="text-[10px] text-slate-500">Control heading size.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="form-label">Body size</label>
+            <input type="range" id="body-size" min="12" max="22" value="16" class="w-full">
+            <p class="text-[10px] text-slate-500">Size for lines 1 &amp; 2.</p>
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Selected text size</label>
+            <input type="range" id="active-size" min="10" max="48" value="16" class="w-full">
+            <p class="text-[10px] text-slate-500">Tap text on the card, then drag to resize just that text.</p>
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Text style</label>
+            <div class="flex items-center gap-4 text-[11px]">
+              <label class="inline-flex items-center gap-1">
+                <input type="checkbox" id="bold-toggle" class="rounded border-slate-700 bg-slate-900">
+                <span>Bold</span>
+              </label>
+              <label class="inline-flex items-center gap-1">
+                <input type="checkbox" id="italic-toggle" class="rounded border-slate-700 bg-slate-900">
+                <span>Italic</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}

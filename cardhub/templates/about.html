@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}About – CardHub Invitation Maker{% endblock %}
+{% block content %}
+<section class="max-w-5xl mx-auto px-4 pt-10 pb-14 space-y-8">
+  <header class="space-y-3">
+    <p class="text-[11px] uppercase tracking-[0.2em] text-sky-400">Project overview</p>
+    <h1 class="text-2xl md:text-3xl font-semibold text-slate-50">
+      CardHub – smart invitation & template builder
+    </h1>
+    <p class="text-sm text-slate-300 max-w-3xl">
+      CardHub is a full-stack mini project inspired by Canva and GreetingsIsland. It lets users browse
+      categories of invitation templates, open a live preview with comments, then customise fonts, colours
+      and backgrounds before downloading a share-ready invite image.
+    </p>
+  </header>
+
+  <section class="grid md:grid-cols-2 gap-4">
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-2 text-[13px]">
+      <h2 class="text-sm font-semibold text-slate-100">Developed by</h2>
+      <p class="text-slate-300">
+        <span class="font-semibold text-slate-50">Amit Singh</span> &amp;
+        <span class="font-semibold text-slate-50">Naman Chausriya</span>.
+      </p>
+      <p class="text-slate-400 text-[12px]">
+        This project was created as an academic / portfolio-friendly web app to show practical knowledge
+        of front-end design, back-end APIs and database integration.
+      </p>
+    </article>
+
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-2 text-[13px]">
+      <h2 class="text-sm font-semibold text-slate-100">Tech stack used</h2>
+      <ul class="list-disc list-inside text-slate-300 space-y-1">
+        <li><span class="font-semibold">Frontend:</span> HTML5, Tailwind CSS, modern UI components, smooth transitions.</li>
+        <li><span class="font-semibold">Backend:</span> Python <span class="font-semibold">Flask</span> for routing, templates &amp; sessions.</li>
+        <li><span class="font-semibold">Database:</span> SQLite with Flask-SQLAlchemy ORM.</li>
+        <li><span class="font-semibold">Export:</span> html2canvas to capture the card preview and download it as PNG.</li>
+        <li><span class="font-semibold">UX extras:</span> hover animations and touch / haptic feedback on taps (supported phones only).</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="grid md:grid-cols-3 gap-4">
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-2 text-[13px]">
+      <h2 class="text-sm font-semibold text-slate-100">What users can do</h2>
+      <ul class="list-disc list-inside text-slate-300 space-y-1">
+        <li>Browse templates by category (Birthday, Wedding, Engagement, Festivals, and more).</li>
+        <li>Open a template preview page with comments, likes and ratings.</li>
+        <li>Click “Edit this template” to go into the live editor.</li>
+      </ul>
+    </article>
+
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-2 text-[13px]">
+      <h2 class="text-sm font-semibold text-slate-100">Inside the editor</h2>
+      <ul class="list-disc list-inside text-slate-300 space-y-1">
+        <li>Change title, lines and the small corner label.</li>
+        <li>Choose font family, font size, bold / italic and text colours.</li>
+        <li>Pick a solid background colour or upload your own background image.</li>
+        <li>Download the card as a high-quality PNG image.</li>
+      </ul>
+    </article>
+
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-2 text-[13px]">
+      <h2 class="text-sm font-semibold text-slate-100">Social features</h2>
+      <ul class="list-disc list-inside text-slate-300 space-y-1">
+        <li>Users can register, log in and save customised cards to their profile.</li>
+        <li>Every template has its own comments / rating section on the preview page.</li>
+        <li>A community reviews page lists who commented on which card.</li>
+        <li>The Discover page shows trending, most-liked and most-commented cards.</li>
+      </ul>
+    </article>
+  </section>
+</section>
+{% endblock %}
