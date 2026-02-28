@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Register – CardHub{% endblock %}
+{% block content %}
+<section class="max-w-sm mx-auto px-4 pt-10 pb-12">
+  <h1 class="text-xl font-semibold mb-4">Create account</h1>
+  <form method="post" class="space-y-3 text-sm">
+    <div>
+      <label class="form-label">Username</label>
+      <input type="text" name="username" class="form-input" required>
+    </div>
+    <div>
+      <label class="form-label">Email</label>
+      <input type="email" name="email" class="form-input" required>
+    </div>
+    <div>
+      <label class="form-label">Password</label>
+      <input type="password" name="password" class="form-input" required>
+    </div>
+    <button type="submit" class="btn-primary text-sm w-full interactive-tap">Register</button>
+  </form>
+  <p class="text-[11px] text-slate-400 pt-3">Already have an account? <a href="{{ url_for('login') }}" class="text-sky-400 hover:text-sky-300">Login</a>.</p>
+</section>
+{% endblock %}

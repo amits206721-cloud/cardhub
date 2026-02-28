@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Discover templates – CardHub{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 pt-8 pb-10 space-y-6">
+
+  <!-- HEADER -->
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold">{{ title }}</h1>
+      <p class="text-[11px] text-slate-400">
+        Explore cards by community activity – trending, most liked or most commented.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2 text-[11px]">
+      <a href="{{ url_for('discover', mode='trending') }}"
+         class="chip {% if mode=='trending' %}!bg-sky-500/20 !border-sky-400/60 text-sky-100{% endif %} interactive-tap">
+        Trending
+      </a>
+
+      <a href="{{ url_for('discover', mode='top-liked') }}"
+         class="chip {% if mode=='top-liked' %}!bg-sky-500/20 !border-sky-400/60 text-sky-100{% endif %} interactive-tap">
+        Most liked
+      </a>
+
+      <a href="{{ url_for('discover', mode='most-comments') }}"
+         class="chip {% if mode=='most-comments' %}!bg-sky-500/20 !border-sky-400/60 text-sky-100{% endif %} interactive-tap">
+        Most comments
+      </a>
+    </div>
+  </header>
+
+
+  <!-- TEMPLATE GRID -->
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+
+    {% for t in templates %}
+
+    <a href="{{ url_for('template_detail', template_id=t.id) }}"
+       class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 hover:scale-[1.02] transition interactive-tap">
+
+      <div class="aspect-[4/3] rounded-xl mb-3 shadow-lg flex flex-col justify-between p-4"
+           style="background-color: {{ t.bg_color }};
+                  {% if t.bg_image %}
+                  background-image: url('{{ t.bg_image }}');
+                  background-size: cover;
+                  background-position: center;
+                  {% endif %}">
+
+        <div class="text-[10px] text-slate-100/80">
+          Custom invitation
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ t.title_text }}
+          </p>
+          <p class="text-[11px] text-slate-800 line-clamp-2">
+            {{ t.line1_text }}
+          </p>
+        </div>
+
+        <p class="text-[10px] text-slate-900 line-clamp-1">
+          {{ t.line2_text }}
+        </p>
+
+      </div>
+
+      <p class="text-xs font-medium">{{ t.name }}</p>
+      <p class="text-[11px] text-slate-400">
+        ★ {{ '%.1f'|format(t.dynamic_rating) }}
+        · {{ t.dynamic_reviews }} reviews
+        · ❤️ {{ t.dynamic_likes }}
+      </p>
+
+    </a>
+
+    {% endfor %}
+
+  </div>
+
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}All templates – CardHub{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 pt-8 pb-10">
+  <header class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <div>
+      <h1 class="text-xl font-semibold">All templates</h1>
+      <p class="text-[11px] text-slate-400">Filter by category and choose a card to preview or edit.</p>
+    </div>
+    <div class="flex flex-wrap gap-2 text-[11px]">
+      <a href="{{ url_for('templates_gallery') }}" class="chip {% if not active_category %}!bg-sky-500/20 !border-sky-400/60 text-sky-100{% endif %} interactive-tap">All</a>
+      {% for cat in categories %}
+      <a href="{{ url_for('templates_gallery', category=cat) }}" class="chip {% if active_category==cat %}!bg-sky-500/20 !border-sky-400/60 text-sky-100{% endif %} interactive-tap">{{ cat }}</a>
+      {% endfor %}
+    </div>
+  </header>
+
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+    {% for t in templates %}
+    <a href="{{ url_for('template_detail', template_id=t.id) }}" class="card-hover rounded-2xl border border-slate-800 bg-slate-900/80 p-3 interactive-tap">
+      <div class="aspect-[4/3] rounded-xl mb-2 shadow-lg flex flex-col justify-between p-4"
+           style="background-color: {{ t.bg_color }};{% if t.bg_image %} background-image: url('{{ t.bg_image }}'); background-size: cover; background-position: center;{% endif %}">
+        <div class="text-[10px] text-slate-100/80">Template preview</div>
+        <div>
+          <p class="text-sm font-semibold text-slate-900">{{ t.title_text }}</p>
+          <p class="text-[11px] text-slate-800 line-clamp-2">{{ t.line1_text }}</p>
+        </div>
+        <p class="text-[10px] text-slate-900 line-clamp-1">{{ t.line2_text }}</p>
+      </div>
+      <p class="text-xs font-medium">{{ t.name }}</p>
+      <p class="text-[11px] text-slate-400">★ {{ '%.1f'|format(t.dynamic_rating) }} · {{ t.dynamic_reviews }} reviews · ❤️ {{ t.dynamic_likes }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

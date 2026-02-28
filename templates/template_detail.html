@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}{{ template.name }} – Preview{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 pt-8 pb-10 space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-[11px] text-slate-400">{{ template.category }}</p>
+      <h1 class="text-xl font-semibold">{{ template.name }}</h1>
+      <p class="text-[11px] text-slate-400">
+        ★ {{ '%.1f'|format(template.rating) }} · {{ template.dynamic_reviews }} reviews · ❤️ {{ template.dynamic_likes }}
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2 text-[11px]">
+      <a href="{{ url_for('editor', template_id=template.id) }}" class="btn-primary interactive-tap">Edit this template</a>
+      <a href="{{ url_for('templates_gallery', category=template.category) }}" class="btn-ghost interactive-tap">More in {{ template.category }}</a>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6 items-start">
+    <div class="space-y-3">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 shadow-2xl">
+        <div class="aspect-[4/3] rounded-2xl flex flex-col justify-between p-6 shadow-lg"
+             style="background-color: {{ template.bg_color }};{% if template.bg_image %} background-image: url('{{ template.bg_image }}'); background-size: cover; background-position: center;{% endif %}">
+          <div class="text-xs text-slate-100/85 bg-slate-900/60 inline-flex px-2 py-0.5 rounded-full border border-slate-700">
+            Community preview
+          </div>
+          <div>
+            <h2 class="text-2xl font-semibold text-slate-900">{{ template.title_text }}</h2>
+            <p class="text-sm text-slate-800">{{ template.line1_text }}</p>
+          </div>
+          <p class="text-xs text-slate-900">{{ template.line2_text }}</p>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-400">
+        This is the preview page. Scroll to see comments, then click <span class="font-semibold">Edit this template</span> to customise your own card.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <section class="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 space-y-3">
+        <h2 class="text-sm font-semibold">Write a review</h2>
+        <form method="post" action="{{ url_for('reviews_page', template_id=template.id) }}" class="space-y-2 text-xs">
+          <div class="flex flex-wrap gap-3 items-center">
+            <label class="flex items-center gap-2">
+              <span>Rating</span>
+              <select name="rating" class="form-input !w-20 !px-2 !py-1">
+                {% for n in range(5,0,-1) %}
+                <option value="{{ n }}">{{ n }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            {% if not current_user_obj %}
+            <label class="flex items-center gap-2">
+              <span>Name</span>
+              <input type="text" name="name" class="form-input !w-28 !px-2 !py-1" placeholder="Optional">
+            </label>
+            {% endif %}
+          </div>
+          <div>
+            <textarea name="comment" rows="3" class="form-input" placeholder="How did this template work for you?"></textarea>
+          </div>
+          <button type="submit" class="btn-ghost text-xs interactive-tap">Post review</button>
+        </form>
+      </section>
+
+      <section class="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 space-y-3 max-h-[28rem] overflow-y-auto">
+        <h2 class="text-sm font-semibold">Comments on this card</h2>
+        {% if reviews %}
+          {% for r in reviews %}
+          <article class="border border-slate-800 rounded-xl px-3 py-2 text-[11px] bg-slate-950/60">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-semibold text-slate-100">
+                {{ r.display_name or 'Guest user' }}
+                · ★ {{ r.rating }}
+              </span>
+              <span class="text-slate-500">{{ r.created_at.strftime('%d %b %Y') }}</span>
+            </div>
+            <p class="text-slate-300">{{ r.comment }}</p>
+          </article>
+          {% endfor %}
+        {% else %}
+          <p class="text-[11px] text-slate-500">No comments yet. Be the first person to review this card.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}CardHub – Invitation Maker{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 pt-10 pb-10 space-y-8">
+  <div class="grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] gap-6 items-center">
+    <div class="space-y-4">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-sky-400">Inspired by Canva &amp; GreetingsIsland</p>
+      <h1 class="text-3xl md:text-4xl font-semibold leading-tight">
+        Design <span class="text-pink-400">invitation cards</span><br/>
+        in minutes with CardHub.
+      </h1>
+      <p class="text-sm text-slate-300 max-w-xl">
+        Pick a template, preview comments, customise fonts, colours &amp; backgrounds, then download a
+        share-ready image for WhatsApp, Instagram or print.
+      </p>
+      <div class="flex flex-wrap gap-3 pt-1">
+        <a href="{{ url_for('templates_gallery') }}" class="btn-primary text-xs interactive-tap">Browse templates</a>
+        <a href="{{ url_for('discover') }}" class="btn-ghost text-xs interactive-tap">See trending cards</a>
+      </div>
+    </div>
+    <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 shadow-2xl card-hover-small">
+      <div class="aspect-[4/3] rounded-2xl bg-slate-950/80 flex flex-col justify-between p-6 shadow-inner">
+        <div class="flex justify-between items-center text-[11px] text-slate-300">
+          <span class="px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-700">Preview</span>
+          <span>★ 4.8 · Community picks</span>
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold">Engagement Ceremony</h2>
+          <p class="text-xs text-slate-300">We invite you to share our joy · Date · Time · Venue</p>
+        </div>
+        <p class="text-[10px] text-slate-500">This preview shows how cards look before editing.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-sm font-semibold">Trending templates</h2>
+      <a href="{{ url_for('discover') }}" class="text-[11px] text-sky-400 hover:text-sky-300 interactive-tap">View all</a>
+    </div>
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {% for t in featured %}
+      <a href="{{ url_for('template_detail', template_id=t.id) }}" class="card-hover rounded-2xl border border-slate-800 bg-slate-900/80 p-3 interactive-tap">
+        <div class="aspect-[4/3] rounded-xl mb-2 shadow-lg flex flex-col justify-between p-4"
+             style="background-color: {{ t.bg_color }};{% if t.bg_image %} background-image: url('{{ t.bg_image }}'); background-size: cover; background-position: center;{% endif %}">
+          <div class="text-[10px] text-slate-100/80">Custom invitation</div>
+          <div>
+            <p class="text-sm font-semibold text-slate-900">{{ t.title_text }}</p>
+            <p class="text-[11px] text-slate-800 line-clamp-2">{{ t.line1_text }}</p>
+          </div>
+          <p class="text-[10px] text-slate-900 line-clamp-1">{{ t.line2_text }}</p>
+        </div>
+        <p class="text-xs font-medium">{{ t.name }}</p>
+        <p class="text-[11px] text-slate-400">★ {{ '%.1f'|format(t.dynamic_rating) }} · {{ t.dynamic_reviews }} reviews · ❤️ {{ t.dynamic_likes }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+</section>
+{% endblock %}

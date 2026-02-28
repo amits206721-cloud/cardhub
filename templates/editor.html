@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% block title %}Edit template – CardHub{% endblock %}
+
+{% block head_extra %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@400;600&family=Dancing+Script:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lobster&family=Great+Vibes&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+  <!-- Back Button -->
+  <div class="mb-6">
+    <a href="{{ url_for('profile') if card else url_for('templates_gallery') }}"
+       class="px-4 py-2 text-xs rounded-lg bg-slate-800/60 border border-slate-700 hover:bg-slate-700 transition">
+      ← Back
+    </a>
+  </div>
+
+  <!-- ================= MAIN GRID ================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 lg:gap-12 items-start">
+
+    <!-- ================= LEFT: LIVE PREVIEW ================= -->
+    <div class="relative">
+
+      <div class="glass-card p-4 sm:p-6 rounded-3xl shadow-2xl">
+        <p class="text-xs text-slate-400 mb-4">Live preview</p>
+
+        <div id="card-preview"
+             class="w-full max-w-md mx-auto lg:max-w-full aspect-[3/4] rounded-2xl shadow-2xl relative overflow-hidden transition-all duration-300"
+             style="background-color: {{ card.bg_color if card else template.bg_color }};
+                    {% if template.bg_image %}
+                    background-image: url('{{ template.bg_image }}');
+                    background-size: cover;
+                    background-position: center;
+                    {% endif %}">
+
+          <!-- Text Elements -->
+          <div id="preview-label"
+               class="editable-text absolute top-6 left-6 text-sm text-white">
+            {{ card.label_text if card else "Custom invitation" }}
+          </div>
+
+          <h2 id="preview-title"
+              class="editable-text absolute top-32 left-10 text-3xl font-semibold text-black"
+              style="font-family:Poppins;">
+            {{ card.title_text if card else template.title_text }}
+          </h2>
+
+          <p id="preview-line1"
+             class="editable-text absolute top-52 left-10 text-base text-black">
+            {{ card.line1_text if card else template.line1_text }}
+          </p>
+
+          <p id="preview-line2"
+             class="editable-text absolute bottom-10 left-10 text-base text-black">
+            {{ card.line2_text if card else template.line2_text }}
+          </p>
+
+        </div>
+      </div>
+
+      <!-- Download Button -->
+      <div class="mt-6">
+        <button onclick="downloadCard()" type="button"
+                class="btn-modern w-full">
+          Download as Image
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ================= RIGHT: CONTROL PANEL ================= -->
+    <div class="glass-card p-5 sm:p-8 rounded-3xl shadow-2xl">
+
+      <div class="mb-8">
+        <p class="text-sm text-slate-400">
+          Editing:
+          <span class="text-white font-semibold">{{ template.name }}</span>
+        </p>
+        <h1 class="text-xl sm:text-2xl font-bold mt-2">Customise your card</h1>
+      </div>
+
+      <form method="POST" action="{{ url_for('save_card', template_id=template.id) }}">
+
+        {% if card %}
+        <input type="hidden" name="card_id" value="{{ card.id }}">
+        {% endif %}
+
+        <div class="space-y-8">
+
+          <!-- TEXT INPUTS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="form-label">Small label</label>
+              <input name="label" id="label-input" class="form-input w-full"
+                     value="{{ card.label_text if card else 'Custom invitation' }}">
+            </div>
+
+            <div>
+              <label class="form-label">Title</label>
+              <input name="title" id="title-input" class="form-input w-full"
+                     value="{{ card.title_text if card else template.title_text }}">
+            </div>
+
+            <div>
+              <label class="form-label">Line 1</label>
+              <input name="line1" id="line1-input" class="form-input w-full"
+                     value="{{ card.line1_text if card else template.line1_text }}">
+            </div>
+
+            <div>
+              <label class="form-label">Line 2</label>
+              <input name="line2" id="line2-input" class="form-input w-full"
+                     value="{{ card.line2_text if card else template.line2_text }}">
+            </div>
+          </div>
+
+          <!-- BACKGROUND SETTINGS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="form-label">Background colour</label>
+              <input type="color" name="bg" id="bg-color" class="w-full h-12 rounded-lg"
+                     value="{{ card.bg_color if card else template.bg_color }}">
+            </div>
+
+            <div>
+              <label class="form-label">Background image</label>
+              <input type="file" id="bg-image" accept="image/*" class="form-input w-full">
+            </div>
+          </div>
+
+          <!-- TYPOGRAPHY -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <div>
+              <label class="form-label">Font family</label>
+              <select id="font-family" class="form-input w-full">
+                <option value="Poppins, sans-serif">Poppins</option>
+                <option value="Playfair Display, serif">Playfair</option>
+                <option value="Dancing Script, cursive">Dancing Script</option>
+                <option value="Montserrat, sans-serif">Montserrat</option>
+                <option value="Raleway, sans-serif">Raleway</option>
+                <option value="Lobster, cursive">Lobster</option>
+                <option value="Great Vibes, cursive">Great Vibes</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label">Title size</label>
+              <input type="range" id="title-size" min="20" max="60" value="32" class="w-full">
+            </div>
+
+            <div>
+              <label class="form-label">Body size</label>
+              <input type="range" id="body-size" min="12" max="40" value="16" class="w-full">
+            </div>
+
+            <div>
+              <label class="form-label">Selected text colour</label>
+              <input type="color" id="active-text-color" class="w-full h-12 rounded-lg">
+            </div>
+
+            <div>
+              <label class="form-label">Selected text size</label>
+              <input type="range" id="active-size" min="10" max="60" value="16" class="w-full">
+            </div>
+
+          </div>
+
+          <!-- STYLE TOGGLES -->
+          <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 text-sm">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="bold-toggle"> Bold
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="italic-toggle"> Italic
+            </label>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="flex flex-col sm:flex-row gap-4 pt-4">
+            <button type="submit"
+                    class="btn-modern flex-1">
+              Save Card
+            </button>
+
+            <a href="{{ url_for('profile') if card else url_for('templates_gallery') }}"
+               class="flex-1 text-center py-3 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition">
+              Cancel
+            </a>
+          </div>
+
+        </div>
+      </form>
+
+    </div>
+
+  </div>
+
+</section>
+
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>{% block title %}CardHub – Invitation Maker{% endblock %}</title>
+
+<!-- ✅ Mobile Optimization (already present but kept clean) -->
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet"/>
+{% block head_extra %}{% endblock %}
+
+<style>
+  body {
+    background: radial-gradient(circle at top, #1e293b, #0f172a 60%, #020617);
+    overflow-x: hidden; /* ✅ Prevent horizontal scroll */
+  }
+</style>
+
+</head>
+
+<body class="text-slate-100 font-[Poppins] min-h-screen flex flex-col page-enter">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/60 border-b border-slate-800">
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+
+    <!-- Logo -->
+    <a class="flex items-center gap-3 group interactive-tap" href="{{ url_for('index') }}">
+      <div class="h-9 w-9 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 shadow-lg shadow-purple-500/20"></div>
+      <span class="text-lg font-semibold tracking-wide leading-tight">
+        CardHub
+        <span class="text-xs text-slate-400 block leading-none">invitation maker</span>
+      </span>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <div class="hidden md:flex items-center gap-6 text-sm">
+      <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+      <a class="nav-link" href="{{ url_for('templates_gallery') }}">Templates</a>
+      <a class="nav-link" href="{{ url_for('discover') }}">Discover</a>
+      <a class="nav-link" href="{{ url_for('reviews_page') }}">Reviews</a>
+      <a class="nav-link" href="{{ url_for('about') }}">About</a>
+
+      {% if current_user_obj %}
+        <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
+        <a class="nav-link text-rose-400" href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a class="nav-chip" href="{{ url_for('login') }}">Login</a>
+        <a class="nav-chip nav-chip-primary" href="{{ url_for('register') }}">Sign up</a>
+      {% endif %}
+    </div>
+
+    <!-- ✅ Mobile Navigation Button (Simple version) -->
+    <div class="md:hidden">
+      <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')"
+              class="p-2 rounded-lg bg-slate-800 border border-slate-700">
+        ☰
+      </button>
+    </div>
+
+  </nav>
+
+  <!-- ✅ Mobile Dropdown Menu -->
+  <div id="mobileMenu" class="hidden md:hidden px-4 pb-4 space-y-3 text-sm bg-slate-900/95 border-t border-slate-800">
+    <a class="block nav-link" href="{{ url_for('index') }}">Home</a>
+    <a class="block nav-link" href="{{ url_for('templates_gallery') }}">Templates</a>
+    <a class="block nav-link" href="{{ url_for('discover') }}">Discover</a>
+    <a class="block nav-link" href="{{ url_for('reviews_page') }}">Reviews</a>
+    <a class="block nav-link" href="{{ url_for('about') }}">About</a>
+
+    {% if current_user_obj %}
+      <a class="block nav-link" href="{{ url_for('profile') }}">Profile</a>
+      <a class="block nav-link text-rose-400" href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+      <a class="block nav-link" href="{{ url_for('login') }}">Login</a>
+      <a class="block nav-link" href="{{ url_for('register') }}">Sign up</a>
+    {% endif %}
+  </div>
+
+</header>
+
+<!-- ================= FLASH MESSAGES ================= -->
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 space-y-3">
+    {% for category, message in messages %}
+      <div class="glass-card flash flash-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endwith %}
+
+<!-- ================= MAIN CONTENT ================= -->
+<main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full fade-in">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="mt-10 backdrop-blur-xl bg-slate-900/60 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+    <p>© 2025 CardHub. For educational & personal use only.</p>
+    <p>
+      Built by <span class="font-semibold text-slate-200">Amit Singh</span>
+      & <span class="font-semibold text-slate-200">Naman Chausriya</span>.
+    </p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
