@@ -1,0 +1,30 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5E6A3"/>
+      <stop offset="25%" style="stop-color:#D4AF37"/>
+      <stop offset="50%" style="stop-color:#C5A100"/>
+      <stop offset="75%" style="stop-color:#D4AF37"/>
+      <stop offset="100%" style="stop-color:#F5E6A3"/>
+    </linearGradient>
+    <linearGradient id="swooshGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#C5A100"/>
+      <stop offset="50%" style="stop-color:#F5E6A3"/>
+      <stop offset="100%" style="stop-color:#C5A100"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="#0F0F0F" stroke="url(#goldGradient)" stroke-width="1"/>
+  <g filter="url(#goldGlow)">
+    <path d="M70 35 L70 30 C55 28 40 35 33 50 C27 62 27 78 35 88 C43 98 57 102 70 100 L70 95 C59 96 47 93 41 82 C36 72 37 58 43 48 C49 38 61 33 70 32 L70 35 Z" fill="url(#goldGradient)"/>
+    <path d="M72 30 L77 30 L77 52 L93 52 L93 30 L98 30 L98 92 L93 92 L93 68 L77 68 L77 92 L72 92 L72 30 Z" fill="url(#goldGradient)"/>
+  </g>
+  <path d="M15 65 Q60 85 105 55 Q60 75 15 65 Z" fill="url(#swooshGradient)" opacity="0.95" filter="url(#goldGlow)"/>
+  <path d="M20 62 Q60 78 100 52" fill="none" stroke="#F5E6A3" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+</svg>

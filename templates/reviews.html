@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Community reviews – CardHub{% endblock %}
+
+{% block content %}
+<section class="section">
+
+  <!-- HEADER -->
+  <header class="container" style="margin-bottom: 40px;">
+    <h1 style="font-size: 2rem; color: #667eea; margin-bottom: 10px;">Community reviews</h1>
+    <p style="color: #666;">Recent comments from users across different cards.</p>
+  </header>
+
+  {% if reviews %}
+  <div class="container">
+    <div class="grid grid-2">
+      {% for r in reviews %}
+      <article style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.3s;">
+        <!-- Top Row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <p style="font-weight: 600; color: #333; margin: 0;">
+            {{ r.display_name or 'Guest user' }}
+            <span style="color: #667eea; margin-left: 5px;">★ {{ r.rating }}</span>
+          </p>
+          <span style="font-size: 0.8rem; color: #888;">
+            {{ r.created_at.strftime('%d %b %Y') }}
+          </span>
+        </div>
+
+        <!-- Comment -->
+        <p style="color: #666; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
+          {{ r.comment }}
+        </p>
+
+        <!-- Template Info -->
+        <p style="font-size: 0.9rem; color: #888; margin: 0;">
+          On:
+          <a href="{{ url_for('template_detail', template_id=r.template.id) }}" style="color: #667eea;">
+            {{ r.template.name }}
+          </a>
+          · {{ r.template.category }}
+        </p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% else %}
+
+  <!-- EMPTY STATE -->
+  <div class="container" style="text-align: center; padding: 60px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <h3 style="font-size: 1.25rem; color: #667eea; margin-bottom: 10px;">No reviews yet</h3>
+    <p style="color: #666;">Be the first one to review a template!</p>
+  </div>
+
+  {% endif %}
+
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Discover templates – CardHub{% endblock %}
+
+{% block head_extra %}
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="section">
+
+  <!-- ================= HEADER ================= -->
+  <header class="container" style="margin-bottom: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <div>
+        <h1 style="font-size: 2.5rem; color: #667eea; margin-bottom: 10px;">{{ title }}</h1>
+        <p style="color: #666; font-size: 1.1rem;">Explore community designs — trending, most liked and most discussed.</p>
+      </div>
+
+      <!-- FILTER PILLS -->
+      <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <a href="{{ url_for('discover', mode='trending') }}" class="tag" style="{% if mode=='trending' %}background: #667eea; color: white; border-color: #667eea;{% endif %}">🔥 Trending</a>
+        <a href="{{ url_for('discover', mode='top-liked') }}" class="tag" style="{% if mode=='top-liked' %}background: #667eea; color: white; border-color: #667eea;{% endif %}">♥ Most liked</a>
+        <a href="{{ url_for('discover', mode='most-comments') }}" class="tag" style="{% if mode=='most-comments' %}background: #667eea; color: white; border-color: #667eea;{% endif %}">💬 Most comments</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= TEMPLATE GRID ================= -->
+  <div class="container">
+    {% if templates %}
+    <div class="grid grid-4">
+      {% for t in templates %}
+      <a href="{{ url_for('template_detail', template_id=t.id) }}" style="text-decoration: none;">
+        <div class="card" style="height: 100%;">
+          {% if t.bg_image %}
+          <div style="aspect-ratio: 3/4; background-image: url('{{ t.bg_image }}'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative;">
+            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
+            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+            <div style="position: relative; z-index: 1; color: white; text-align: center; padding: 15px; width: 85%;">
+              {% if t.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ t.label_text }}</p>{% endif %}
+              {% if t.title_text %}<h3 style="font-size: 1.25rem; font-family: 'Great Vibes', cursive; margin: 5px 0;">{{ t.title_text }}</h3>{% endif %}
+              {% if t.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ t.line1_text }}</p>{% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div style="aspect-ratio: 3/4; background: {{ t.bg_color or '#f0f0f0' }}; display: flex; align-items: center; justify-content: center; text-align: center; padding: 15px; position: relative;">
+            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+            <div style="color: #333; width: 85%;">
+              {% if t.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ t.label_text }}</p>{% endif %}
+              {% if t.title_text %}<h3 style="font-size: 1.25rem; font-family: 'Great Vibes', cursive; margin: 5px 0;">{{ t.title_text }}</h3>{% endif %}
+              {% if t.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ t.line1_text }}</p>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <div style="padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 600; color: #333; font-size: 0.9rem;">{{ t.name }}</span>
+              <span style="color: #667eea; font-size: 0.85rem;">★ {{ '%.1f'|format(t.dynamic_rating or 4.5) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; color: #888;">
+              <span>({{ t.dynamic_reviews or 0 }} reviews)</span>
+              <span>♥ {{ t.dynamic_likes or 0 }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      <h3 style="font-size: 1.5rem; color: #667eea; margin-bottom: 10px;">No templates found</h3>
+      <p style="color: #666;">Try switching filters or explore other categories.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</section>
+{% endblock %}

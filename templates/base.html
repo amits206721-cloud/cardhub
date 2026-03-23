@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>{% block title %}CardHub – Invitation Maker{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet"/>
+{% block head_extra %}{% endblock %}
+</head>
+
+<body>
+
+{% set is_editor = request.endpoint in ['editor', 'edit_card'] %}
+
+<!-- ================= NAVBAR ================= -->
+{% if not is_editor %}
+<header class="navbar">
+  <div class="container">
+    <!-- Logo -->
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='images/logo-ch.svg') }}" alt="CardHub" style="height: 40px; width: 40px;">
+      <span>CardHub</span>
+    </a>
+
+    <!-- Desktop Links -->
+    <ul class="navbar-menu">
+      {% macro navlink(endpoint, label) %}
+        <li><a href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}class="active"{% endif %}>{{ label }}</a></li>
+      {% endmacro %}
+
+      {{ navlink('index', 'Home') }}
+      {{ navlink('templates_gallery', 'Templates') }}
+      {{ navlink('discover', 'Discover') }}
+      {{ navlink('reviews_page', 'Reviews') }}
+      {{ navlink('about', 'About') }}
+
+      {% if current_user_obj %}
+        {{ navlink('profile', 'Profile') }}
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      {% else %}
+        {{ navlink('login', 'Login') }}
+        <li><a href="{{ url_for('register') }}" class="btn-primary" style="padding: 8px 20px;">Sign up</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</header>
+{% endif %}
+
+
+
+<!-- ================= FLASH MESSAGES ================= -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container" style="margin-top: 20px;">
+      {% for category, message in messages %}
+        <div class="alert alert-{% if category == 'success' %}success{% elif category == 'error' %}error{% elif category == 'warning' %}warning{% else %}info{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+
+<!-- ================= MAIN ================= -->
+{% if is_editor %}
+<main style="flex: 1; width: 100%;">
+{% else %}
+<main>
+{% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+
+
+<!-- ================= FOOTER ================= -->
+{% if not is_editor %}
+<footer class="footer">
+  <div class="container">
+    <p style="margin-bottom: 10px; font-size: 1.25rem; font-weight: 600;">CardHub</p>
+    <p style="margin-bottom: 20px; color: #bdc3c7;">Create beautiful digital invitations with ease.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Support</a>
+    </div>
+
+    <p style="color: #7f8c8d; font-size: 0.9rem;">© 2026 CardHub</p>
+  </div>
+</footer>
+{% endif %}
+
+
+
+<!-- ================= LOADING SPINNER ================= -->
+<div id="loading-spinner" style="position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
+  <div style="text-align: center;">
+    <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #4a90d9; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+    <p style="color: white; margin-top: 15px;">Loading...</p>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+function showLoader() {
+  var loader = document.getElementById('loading-spinner');
+  if (loader) loader.style.display = 'flex';
+}
+
+function hideLoader() {
+  var loader = document.getElementById('loading-spinner');
+  if (loader) loader.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var forms = document.querySelectorAll('form');
+  for (var i = 0; i < forms.length; i++) {
+    forms[i].addEventListener('submit', function() {
+      showLoader();
+    });
+  }
+  
+  var buttons = document.querySelectorAll('button[type="submit"], input[type="submit"]');
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', function() {
+      showLoader();
+    });
+  }
+});
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

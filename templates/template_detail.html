@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Edit template – CardHub{% endblock %}
+
+{% block head_extra %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Great+Vibes&family=Poppins:wght@400;600&family=Dancing+Script:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lobster&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+#card-preview .editable-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 85%;
+    text-align: center;
+    white-space: normal;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section style="max-width: 1400px; margin: 0 auto; padding: 40px 20px 80px;">
+
+  <!-- TOP BAR -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    {% if card %}
+      <a href="{{ url_for('profile') }}" style="color: #666; font-size: 0.9rem;">← Back to Profile</a>
+    {% else %}
+      <a href="{{ url_for('templates_gallery') }}" style="color: #666; font-size: 0.9rem;">← Back to Templates</a>
+    {% endif %}
+
+    <h1 style="font-size: 1.5rem; color: #667eea;">Design Studio</h1>
+
+    <button onclick="downloadCard()" type="button" style="padding: 10px 24px; border-radius: 25px; background: #667eea; color: white; font-weight: 600; border: none; cursor: pointer;">
+      Download
+    </button>
+  </div>
+
+
+  <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 60px;">
+
+    <!-- WORKSPACE -->
+    <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 40px; border-radius: 16px; border: 1px solid #eee;">
+      <div id="card-preview" style="aspect-ratio: 3/4; width: 420px; border-radius: 16px; position: relative; overflow: hidden; border: 1px solid #ddd; display: flex; flex-direction: column; align-items: center;
+        {% if template.bg_image %}
+          background-image: url('{{ template.bg_image }}'); background-size: cover; background-position: center;
+        {% else %}
+          background: {{ card.bg_color if card else template.bg_color }};
+        {% endif %}
+        font-family: 'Playfair Display', serif;
+      ">
+        {% if template.bg_image %}
+        <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
+        {% endif %}
+
+        <!-- Inner Frame -->
+        <div style="position: absolute; inset: 20px; border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+
+        <!-- TEXT LAYERS -->
+        <div id="preview-label" class="editable-text" style="top: 70px; color: #667eea; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
+          {{ card.label_text if card else (template.label_text if template.label_text else template.category) }}
+        </div>
+
+        <h2 id="preview-title" class="editable-text" style="top: 130px; font-size: 3rem; color: #667eea; font-family: 'Great Vibes', cursive;">
+          {{ card.title_text if card else template.title_text }}
+        </h2>
+
+        <p id="preview-line1" class="editable-text" style="top: 230px; font-size: 1.1rem; color: #555;">
+          {{ card.line1_text if card else template.line1_text }}
+        </p>
+
+        <p id="preview-line2" class="editable-text" style="top: 300px; font-size: 0.9rem; color: #666;">
+          {{ card.line2_text if card else template.line2_text }}
+        </p>
+      </div>
+    </div>
+
+
+    <!-- SIDEBAR - EDITING TOOLS -->
+    <div style="height: 85vh; overflow-y: auto; padding-right: 10px;">
+      <form method="POST" action="{{ url_for('save_card', template_id=template.id) }}">
+
+        {% if card %}
+        <input type="hidden" name="card_id" value="{{ card.id }}">
+        {% endif %}
+
+        <!-- TEXT INPUTS -->
+        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Text</h3>
+
+          <input name="label" id="label-input" class="form-input" style="margin-bottom: 12px;"
+                 value="{{ card.label_text if card else (template.label_text if template.label_text else template.category) }}">
+
+          <input name="title" id="title-input" class="form-input" style="margin-bottom: 12px;"
+                 value="{{ card.title_text if card else template.title_text }}">
+
+          <input name="line1" id="line1-input" class="form-input" style="margin-bottom: 12px;"
+                 value="{{ card.line1_text if card else template.line1_text }}">
+
+          <input name="line2" id="line2-input" class="form-input"
+                 value="{{ card.line2_text if card else template.line2_text }}">
+        </div>
+
+        <!-- TYPOGRAPHY -->
+        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Typography</h3>
+
+          <select id="font-family" class="form-input" style="margin-bottom: 12px;">
+            <option value="'Playfair Display', serif">Playfair</option>
+            <option value="'Great Vibes', cursive">Great Vibes</option>
+            <option value="'Poppins', sans-serif">Poppins</option>
+            <option value="'Montserrat', sans-serif">Montserrat</option>
+            <option value="'Raleway', sans-serif">Raleway</option>
+            <option value="'Lobster', cursive">Lobster</option>
+          </select>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Title Size</label>
+            <input type="range" id="title-size" min="20" max="80" value="50" style="width: 100%;">
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Body Size</label>
+            <input type="range" id="body-size" min="12" max="40" value="18" style="width: 100%;">
+          </div>
+
+          <div>
+            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Selected Text Size</label>
+            <input type="range" id="active-size" min="10" max="100" value="20" style="width: 100%;">
+          </div>
+        </div>
+
+        <!-- STYLE -->
+        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Style</h3>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Text Color</label>
+            <input type="color" id="active-text-color" value="#667eea" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div style="display: flex; gap: 20px; padding-top: 8px; font-size: 0.9rem; color: #555;">
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="bold-toggle"> Bold
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="italic-toggle"> Italic
+            </label>
+          </div>
+        </div>
+
+        <!-- BACKGROUND -->
+        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Background</h3>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Background Color</label>
+            <input type="color" id="bg-color" value="{{ card.bg_color if card else template.bg_color }}" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div>
+            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Background Image</label>
+            <input type="file" id="bg-image" accept="image/*" style="font-size: 0.9rem; color: #666;">
+          </div>
+        </div>
+
+        <div style="padding-top: 20px;">
+          <button type="submit" style="width: 100%; padding: 14px; border-radius: 25px; background: #667eea; color: white; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
+            Save Card
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+</section>
+
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}

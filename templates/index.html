@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %}CardHub – Create Stunning Invitations{% endblock %}
+
+{% block head_extra %}
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= HERO ================= -->
+<section class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+      
+      <!-- Left Content -->
+      <div style="color: white;">
+        <h1 style="font-size: 3rem; margin-bottom: 20px; line-height: 1.2;">
+          Create Beautiful Invitations in Minutes
+        </h1>
+        <p style="font-size: 1.1rem; margin-bottom: 30px; opacity: 0.95; max-width: 500px;">
+          Design, edit, and download beautiful invitations online. 
+          Choose from elegant templates and customize every detail with ease.
+        </p>
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <a href="{{ url_for('templates_gallery') }}" class="btn-primary" style="background: white; color: #667eea;">Explore Templates</a>
+          <a href="{{ url_for('discover') }}" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 500;">Create Now</a>
+        </div>
+        
+        <!-- Stats -->
+        <div style="display: flex; gap: 40px; margin-top: 40px;">
+          <div>
+            <p style="font-size: 2rem; font-weight: 700; margin: 0;">{{ stats.total_templates }}+</p>
+            <p style="margin: 0; opacity: 0.85;">Templates</p>
+          </div>
+          <div>
+            <p style="font-size: 2rem; font-weight: 700; margin: 0;">{{ stats.total_users }}+</p>
+            <p style="margin: 0; opacity: 0.85;">Happy Users</p>
+          </div>
+          <div>
+            <p style="font-size: 2rem; font-weight: 700; margin: 0;">{{ stats.total_categories }}+</p>
+            <p style="margin: 0; opacity: 0.85;">Categories</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right - Card Preview -->
+      <div>
+        {% if featured and featured|length > 0 %}
+        <a href="{{ url_for('template_detail', template_id=featured[0].id) }}" style="display: block; text-decoration: none;">
+          <div class="card" style="padding: 0; max-width: 350px; margin: 0 auto; cursor: pointer;">
+        {% if featured[0].bg_image %}
+            <div style="aspect-ratio: 3/4; background-image: url('{{ featured[0].bg_image }}'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative;">
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
+              <div style="position: absolute; inset: 20px; border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+              <div style="position: relative; z-index: 1; color: white; text-align: center; padding: 30px; width: 85%;">
+                {% if featured[0].label_text %}<p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; opacity: 0.8;">{{ featured[0].label_text }}</p>{% endif %}
+                {% if featured[0].title_text %}<h3 style="font-size: 1.75rem; font-family: 'Great Vibes', cursive; margin-bottom: 10px;">{{ featured[0].title_text }}</h3>{% endif %}
+                {% if featured[0].line1_text %}<p style="font-size: 0.9rem; opacity: 0.9;">{{ featured[0].line1_text }}</p>{% endif %}
+                {% if featured[0].line2_text %}<p style="font-size: 0.8rem; opacity: 0.8; margin-top: 10px;">{{ featured[0].line2_text }}</p>{% endif %}
+              </div>
+            </div>
+            {% else %}
+            <div style="aspect-ratio: 3/4; background: {{ featured[0].bg_color or '#f0f0f0' }}; display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px; position: relative;">
+              <div style="position: absolute; inset: 20px; border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+              <div style="color: #333; width: 85%;">
+                {% if featured[0].label_text %}<p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; opacity: 0.8;">{{ featured[0].label_text }}</p>{% endif %}
+                {% if featured[0].title_text %}<h3 style="font-size: 1.75rem; font-family: 'Great Vibes', cursive; margin-bottom: 10px;">{{ featured[0].title_text }}</h3>{% endif %}
+                {% if featured[0].line1_text %}<p style="font-size: 0.9rem; opacity: 0.9;">{{ featured[0].line1_text }}</p>{% endif %}
+                {% if featured[0].line2_text %}<p style="font-size: 0.8rem; opacity: 0.8; margin-top: 10px;">{{ featured[0].line2_text }}</p>{% endif %}
+              </div>
+            </div>
+            {% endif %}
+            
+            <div style="padding: 20px; background: white;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: #333;">{{ featured[0].name }}</span>
+                <span style="color: #f39c12;">★ {{ '%.1f'|format(featured[0].dynamic_rating or 4.5) }}</span>
+              </div>
+            </div>
+          </div>
+        </a>
+        {% else %}
+        <div class="card" style="padding: 40px; text-align: center; max-width: 350px; margin: 0 auto;">
+          <p style="color: #888;">No templates available</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TEMPLATES SECTION ================= -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Popular Templates</h2>
+    <p style="text-align: center; color: #666; max-width: 600px; margin: 0 auto 40px;">Browse our collection of beautifully designed invitation templates</p>
+    
+    <!-- Category Tags -->
+    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 40px;">
+      <a href="{{ url_for('templates_gallery') }}" class="tag" style="background: #667eea; color: white; border-color: #667eea;">All</a>
+      {% for cat in categories[:6] %}
+      <a href="{{ url_for('templates_gallery', category=cat) }}" class="tag">{{ cat }}</a>
+      {% endfor %}
+    </div>
+    
+    <!-- Templates Grid -->
+    <div class="grid grid-4">
+      {% for t in featured[:8] %}
+      <a href="{{ url_for('template_detail', template_id=t.id) }}" style="text-decoration: none;">
+        <div class="card" style="height: 100%;">
+          {% if t.bg_image %}
+          <div style="aspect-ratio: 3/4; background-image: url('{{ t.bg_image }}'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative;">
+            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
+            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+            <div style="position: relative; z-index: 1; color: white; text-align: center; padding: 15px; width: 85%;">
+              {% if t.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ t.label_text }}</p>{% endif %}
+              {% if t.title_text %}<h3 style="font-size: 1.25rem; font-family: 'Great Vibes', cursive; margin: 5px 0;">{{ t.title_text }}</h3>{% endif %}
+              {% if t.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ t.line1_text }}</p>{% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div style="aspect-ratio: 3/4; background: {{ t.bg_color or '#f0f0f0' }}; display: flex; align-items: center; justify-content: center; text-align: center; padding: 15px; position: relative;">
+            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+            <div style="color: #333; width: 85%;">
+              {% if t.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ t.label_text }}</p>{% endif %}
+              {% if t.title_text %}<h3 style="font-size: 1.25rem; font-family: 'Great Vibes', cursive; margin: 5px 0;">{{ t.title_text }}</h3>{% endif %}
+              {% if t.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ t.line1_text }}</p>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <div style="padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 500; color: #333; font-size: 0.9rem;">{{ t.name }}</span>
+              <span style="color: #667eea; font-size: 0.85rem;">★ {{ '%.1f'|format(t.dynamic_rating or 4.5) }}</span>
+            </div>
+            <span style="display: inline-block; margin-top: 10px; font-size: 0.75rem; color: #888;">{{ t.category }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="{{ url_for('templates_gallery') }}" class="btn-secondary">View All Templates</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RECENT TEMPLATES SECTION ================= -->
+{% if recent and recent|length > 0 %}
+<section class="section" style="background: #f8f9fa;">
+  <div class="container">
+    <h2 class="section-title">New Arrivals</h2>
+    <p style="text-align: center; color: #666; max-width: 600px; margin: 0 auto 40px;">Check out our recently added invitation templates</p>
+    
+    <div class="grid grid-4">
+      {% for t in recent[:8] %}
+      <a href="{{ url_for('template_detail', template_id=t.id) }}" style="text-decoration: none;">
+        <div class="card" style="height: 100%;">
+          {% if t.bg_image %}
+          <div style="aspect-ratio: 3/4; background-image: url('{{ t.bg_image }}'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative;">
+            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
+            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+            <div style="position: relative; z-index: 1; color: white; text-align: center; padding: 15px; width: 85%;">
+              {% if t.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ t.label_text }}</p>{% endif %}
+              {% if t.title_text %}<h3 style="font-size: 1.25rem; font-family: 'Great Vibes', cursive; margin: 5px 0;">{{ t.title_text }}</h3>{% endif %}
+              {% if t.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ t.line1_text }}</p>{% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div style="aspect-ratio: 3/4; background: {{ t.bg_color or '#f0f0f0' }}; display: flex; align-items: center; justify-content: center; text-align: center; padding: 15px; position: relative;">
+            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
+            <div style="color: #333; width: 85%;">
+              {% if t.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ t.label_text }}</p>{% endif %}
+              {% if t.title_text %}<h3 style="font-size: 1.25rem; font-family: 'Great Vibes', cursive; margin: 5px 0;">{{ t.title_text }}</h3>{% endif %}
+              {% if t.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ t.line1_text }}</p>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <div style="padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 500; color: #333; font-size: 0.9rem;">{{ t.name }}</span>
+              <span style="color: #667eea; font-size: 0.85rem;">★ {{ '%.1f'|format(t.dynamic_rating or 4.5) }}</span>
+            </div>
+            <span style="display: inline-block; margin-top: 10px; font-size: 0.75rem; color: #888;">{{ t.category }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="{{ url_for('discover') }}" class="btn-secondary">View All New Templates</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p style="text-align: center; color: #666; max-width: 600px; margin: 0 auto 50px;">Create your perfect invitation in three simple steps</p>
+    
+    <div class="grid grid-3">
+      <!-- Step 1 -->
+      <div style="text-align: center; padding: 30px;">
+        <div style="width: 70px; height: 70px; background: #667eea; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+          <svg style="width: 30px; height: 30px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+        </div>
+        <h3 style="font-size: 1.25rem; margin-bottom: 10px;">Choose Template</h3>
+        <p style="color: #666; font-size: 0.95rem;">Browse our extensive collection of professionally designed templates for any occasion</p>
+      </div>
+      
+      <!-- Step 2 -->
+      <div style="text-align: center; padding: 30px;">
+        <div style="width: 70px; height: 70px; background: #667eea; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+          <svg style="width: 30px; height: 30px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </div>
+        <h3 style="font-size: 1.25rem; margin-bottom: 10px;">Edit Live</h3>
+        <p style="color: #666; font-size: 0.95rem;">Customize text, colors, fonts, and images with our easy-to-use live editor</p>
+      </div>
+      
+      <!-- Step 3 -->
+      <div style="text-align: center; padding: 30px;">
+        <div style="width: 70px; height: 70px; background: #667eea; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+          <svg style="width: 30px; height: 30px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </div>
+        <h3 style="font-size: 1.25rem; margin-bottom: 10px;">Download & Share</h3>
+        <p style="color: #666; font-size: 0.95rem;">Download in high quality or share directly via email and social media</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA SECTION ================= -->
+<section class="section" style="background: #2c3e50; color: white;">
+  <div class="container" style="text-align: center;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Ready to Create Your Perfect Invitation?</h2>
+    <p style="max-width: 600px; margin: 0 auto 30px; opacity: 0.9;">Join thousands of happy users who have created beautiful invitations for their special occasions</p>
+    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+      <a href="{{ url_for('register') }}" class="btn-primary" style="background: white; color: #2c3e50;">Get Started Free</a>
+      <a href="{{ url_for('templates_gallery') }}" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 500;">Browse Templates</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

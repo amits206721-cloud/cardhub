@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}About – CardHub Invitation Maker{% endblock %}
+
+{% block content %}
+<section style="max-width: 1200px; margin: 0 auto; padding: 80px 20px 100px;">
+
+  <!-- ================= HEADER ================= -->
+  <header style="text-align: center; max-width: 700px; margin: 0 auto 60px;">
+    <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; color: #667eea; margin-bottom: 15px;">Project Overview</p>
+    <h1 style="font-size: 2.5rem; color: #667eea; margin-bottom: 20px;">CardHub – Smart Invitation & Template Builder</h1>
+    <p style="color: #666; font-size: 1.1rem; line-height: 1.7;">
+      CardHub is a full-stack web application inspired by modern design platforms.
+      It allows users to browse invitation templates, preview community reviews,
+      customise fonts, colours and backgrounds, then download a share-ready invite.
+    </p>
+  </header>
+
+
+  <!-- ================= DEVELOPERS + STACK ================= -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-bottom: 60px;">
+    <article style="background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+      <h2 style="font-size: 1.25rem; color: #667eea; margin-bottom: 15px;">Developed by</h2>
+      <p style="font-size: 1.1rem; color: #333; margin-bottom: 15px;">
+        <strong>Amit Singh</strong> & <strong>Naman Chausriya</strong>
+      </p>
+      <p style="color: #666; font-size: 0.95rem; line-height: 1.7;">
+        Created as an academic and portfolio-ready web application to demonstrate
+        practical knowledge of frontend UI design, backend APIs and database integration.
+      </p>
+    </article>
+
+    <article style="background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+      <h2 style="font-size: 1.25rem; color: #667eea; margin-bottom: 15px;">Tech Stack Used</h2>
+      <ul style="color: #666; font-size: 0.95rem; line-height: 2; padding-left: 20px;">
+        <li><strong>Frontend:</strong> HTML5, CSS, modern UI components.</li>
+        <li><strong>Backend:</strong> Python Flask for routing, templates and sessions.</li>
+        <li><strong>Database:</strong> SQLite with Flask-SQLAlchemy ORM.</li>
+        <li><strong>Export:</strong> html2canvas to capture preview and download PNG.</li>
+        <li><strong>UX Extras:</strong> hover animations and mobile-friendly interactions.</li>
+      </ul>
+    </article>
+  </div>
+
+
+  <!-- ================= FEATURES ================= -->
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+    <article style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+      <h2 style="font-size: 1.1rem; color: #667eea; margin-bottom: 15px;">What Users Can Do</h2>
+      <ul style="color: #666; font-size: 0.9rem; line-height: 2; padding-left: 20px;">
+        <li>Browse templates by category.</li>
+        <li>Open preview with comments, likes and ratings.</li>
+        <li>Enter live editor to customise design.</li>
+      </ul>
+    </article>
+
+    <article style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+      <h2 style="font-size: 1.1rem; color: #667eea; margin-bottom: 15px;">Inside the Editor</h2>
+      <ul style="color: #666; font-size: 0.9rem; line-height: 2; padding-left: 20px;">
+        <li>Change title, lines and label.</li>
+        <li>Choose font family and size.</li>
+        <li>Select background colour or upload image.</li>
+        <li>Download high-quality PNG.</li>
+      </ul>
+    </article>
+
+    <article style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+      <h2 style="font-size: 1.1rem; color: #667eea; margin-bottom: 15px;">Social Features</h2>
+      <ul style="color: #666; font-size: 0.9rem; line-height: 2; padding-left: 20px;">
+        <li>Users can register and save customised cards.</li>
+        <li>Each template has review & rating system.</li>
+        <li>Discover page shows trending and most-liked designs.</li>
+      </ul>
+    </article>
+  </div>
+
+</section>
+{% endblock %}
