@@ -1,152 +1,147 @@
 {% extends "base.html" %}
 {% block title %}Your Profile – CardHub{% endblock %}
 
-{% block head_extra %}
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-{% endblock %}
-
 {% block content %}
-<section style="max-width: 1200px; margin: 0 auto; padding: 60px 20px 100px;">
+<div class="container">
 
-  <!-- BACK BUTTON -->
-  <div style="margin-bottom: 30px;">
-    <a href="{{ url_for('index') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid #ddd; border-radius: 8px; color: #666; font-size: 0.9rem;">
-      ← Back to Home
+  <!-- PROFILE HEADER -->
+  <section class="profile-hero">
+
+  <!-- TOP BAR -->
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap;">
+
+    <!-- LEFT: AVATAR + INFO -->
+    <div class="d-flex align-center gap-2" style="flex-wrap: wrap;">
+      
+      {% if user.profile_pic %}
+        <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}" 
+             alt="{{ user.username }}" class="profile-avatar">
+      
+             {% else %}
+             <div class="profile-avatar text-white"
+                  style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); font-size: 2rem; font-weight: bold; display:flex; align-items:center; justify-content:center; line-height:1;">
+                  {{ user.username[0]|upper if user.username else 'U' }}
+              </div>
+              {% endif %}
+      <div>
+        <h1 style="margin:0;">{{ user.username }}</h1>
+        <p style="margin:0; opacity:0.9;">{{ user.email }}</p>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: EDIT BUTTON -->
+    <a href="{{ url_for('edit_profile') }}" class="btn-ghost">
+      ✏️ Edit Profile
     </a>
+
   </div>
 
-
-  <!-- ================= PROFILE HEADER ================= -->
-  <section style="background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 40px;">
-
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
-      <h2 style="font-size: 1.5rem; color: #667eea;">Profile Overview</h2>
-
-      <a href="{{ url_for('edit_profile') }}" style="padding: 10px 24px; border: 1px solid #667eea; border-radius: 25px; color: #667eea; font-weight: 500; text-decoration: none;">
-         Edit Profile
-      </a>
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 30px;">
-
-      <!-- LEFT SIDE -->
-      <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
-        <img src="https://api.dicebear.com/7.x/{{ user.avatar_style or 'avataaars' }}/svg?seed={{ user.username }}" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #667eea;">
-
-        <div>
-          <h1 style="font-size: 1.75rem; color: #333; margin-bottom: 5px;">{{ user.username }}</h1>
-          <p style="color: #666; font-size: 0.95rem;">{{ user.email }}</p>
-          <p style="color: #888; font-size: 0.85rem; margin-top: 5px;">Member since {{ user.created_at.strftime('%B %Y') }}</p>
-        </div>
+  <!-- STATS (RIGHT SIDE HORIZONTAL) -->
+  <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+    
+    <div class="profile-stats-row">
+      <div class="stat-item">
+        <div class="stat-number">{{ cards|length }}</div>
+        <div class="stat-label">Saved Cards</div>
       </div>
 
-      <!-- RIGHT SIDE STATS -->
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-        <div style="background: #f8f9fa; border-radius: 12px; padding: 24px; text-align: center;">
-          <p style="font-size: 2rem; font-weight: 700; color: #667eea; margin: 0;">{{ cards|length }}</p>
-          <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">Saved Cards</p>
-        </div>
-
-        <div style="background: #f8f9fa; border-radius: 12px; padding: 24px; text-align: center;">
-          <p style="font-size: 2rem; font-weight: 700; color: #667eea; margin: 0;">{{ reviews|length }}</p>
-          <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">Reviews</p>
-        </div>
+      <div class="stat-item">
+        <div class="stat-number">{{ reviews|length }}</div>
+        <div class="stat-label">Reviews</div>
       </div>
 
-    </div>
-  </section>
-
-
-  <!-- ================= SAVED CARDS ================= -->
-  <section style="margin-bottom: 50px;">
-    <h2 style="font-size: 1.5rem; color: #667eea; margin-bottom: 24px;">Saved Cards</h2>
-
-    {% if cards %}
-    <div class="grid grid-4">
-      {% for c in cards %}
-      <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-        
-        <!-- Card Preview -->
-        <a href="{{ url_for('edit_card', card_id=c.id) }}" style="text-decoration: none;">
-          <div style="aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; position: relative;
-            {% if c.template and c.template.bg_image %}
-              background-image: url('{{ c.template.bg_image }}'); background-size: cover; background-position: center;
-            {% else %}
-              background: {{ c.bg_color or '#f0f0f0' }};
-            {% endif %}
-          ">
-            {% if c.template and c.template.bg_image %}
-            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
-            {% endif %}
-            <div style="position: absolute; inset: 15px; border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
-            
-            <div style="position: relative; z-index: 1; color: {% if c.template and c.template.bg_image %}white{% else %}#333{% endif %}; width: 85%;">
-              {% if c.label_text %}<p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">{{ c.label_text }}</p>{% endif %}
-              {% if c.title_text %}<h3 style="font-size: 1.25rem; margin: 5px 0; font-family: 'Great Vibes', cursive; color: #667eea;">{{ c.title_text }}</h3>{% endif %}
-              {% if c.line1_text %}<p style="font-size: 0.7rem; opacity: 0.9; margin-top: 8px;">{{ c.line1_text }}</p>{% endif %}
-              {% if c.line2_text %}<p style="font-size: 0.65rem; opacity: 0.7; margin-top: 6px;">{{ c.line2_text }}</p>{% endif %}
-            </div>
-          </div>
-        </a>
-
-        <!-- Info & Buttons -->
-        <div style="padding: 15px; background: white;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <p style="font-size: 0.85rem; font-weight: 500; color: #333; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;">{{ c.template.name if c.template else 'Template #' ~ c.template_id }}</p>
-            <span style="font-size: 0.75rem; color: #888;">{{ c.created_at.strftime('%d %b %Y') }}</span>
-          </div>
-          
-          <!-- Edit and Delete Buttons -->
-          <div style="display: flex; gap: 8px;">
-            <a href="{{ url_for('edit_card', card_id=c.id) }}" style="flex: 1; padding: 8px; background: #667eea; color: white; font-size: 0.8rem; font-weight: 500; border-radius: 6px; text-align: center; text-decoration: none;">
-              Edit
-            </a>
-            <form method="POST" action="{{ url_for('delete_card', card_id=c.id) }}" onsubmit="return confirm('Delete this card?');" style="flex: 1;">
-              <button type="submit" style="width: 100%; padding: 8px; background: #e74c3c; color: white; font-size: 0.8rem; font-weight: 500; border-radius: 6px; border: none; cursor: pointer;">
-                Delete
-              </button>
-            </form>
-          </div>
-        </div>
-
+      <div class="stat-item">
+        <div class="stat-number">{{ user.created_at.strftime('%b %Y') }}</div>
+        <div class="stat-label">Member Since</div>
       </div>
-      {% endfor %}
     </div>
 
-    {% else %}
-    <div style="border: 2px dashed #ddd; border-radius: 16px; padding: 60px; text-align: center; background: #fafafa;">
-      <p style="color: #888;">You haven't created any cards yet.</p>
-    </div>
-    {% endif %}
-  </section>
-
-
-  <!-- ================= REVIEWS ================= -->
-  <section>
-    <h2 style="font-size: 1.5rem; color: #667eea; margin-bottom: 24px;">Your Reviews</h2>
-
-    {% if reviews %}
-    <div class="grid grid-2">
-      {% for r in reviews %}
-      <article style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-        <p style="font-weight: 600; color: #333;">
-          <span style="color: #f39c12; font-size: 1.1rem;">★ {{ r.rating }}</span>
-          on {{ r.template.name if r.template else 'Unknown Template' }}
-        </p>
-
-        <p style="color: #666; font-size: 0.95rem; margin-top: 12px; line-height: 1.6;">{{ r.comment }}</p>
-
-        <p style="color: #888; font-size: 0.8rem; margin-top: 12px;">{{ r.created_at.strftime('%d %b %Y') }}</p>
-      </article>
-      {% endfor %}
-    </div>
-
-    {% else %}
-    <div style="border: 2px dashed #ddd; border-radius: 16px; padding: 60px; text-align: center; background: #fafafa;">
-      <p style="color: #888;">You haven't written any reviews yet.</p>
-    </div>
-    {% endif %}
-  </section>
+  </div>
 
 </section>
+
+  <!-- SAVED CARDS -->
+  <section class="profile-section">
+    <h2 class="profile-section-title">💳 Saved Cards</h2>
+
+    {% if cards %}
+      <div class="profile-grid">
+        {% for card in cards %}
+          <div class="card">
+            <a href="{{ url_for('edit_card', card_id=card.id) }}" 
+               class="card-compact"
+               style="
+               height: 180px;
+               {% if card.bg_image %}
+                 background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ card.bg_image }}');
+                 background-size: cover;
+                 background-position: center;
+               {% else %}
+                 background: {{ card.bg_color or '#f8f9fa' }};
+               {% endif %}
+               ">
+
+              <div style="position: absolute; inset: 0; padding: 1rem; color: white; display: flex; flex-direction: column; justify-content: center; text-shadow: 0 1px 3px rgba(0,0,0,0.7);">
+                {% if card.label_text %}<div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 0.25rem;">{{ card.label_text }}</div>{% endif %}
+                {% if card.title_text %}<div style="font-size: 1.25rem; margin-bottom: 0.25rem;">{{ card.title_text }}</div>{% endif %}
+                {% if card.line1_text %}<div style="font-size: 1rem; opacity: 0.95;">{{ card.line1_text }}</div>{% endif %}
+                {% if card.line2_text %}<div style="font-size: 1rem; opacity: 0.95;">{{ card.line2_text }}</div>{% endif %}
+              </div>
+            </a>
+
+            <div class="card-meta">
+              <span>{{ card.template.name if card.template else 'Custom' }}</span>
+              <span style="color: #888;">{{ card.created_at.strftime('%d %b') }}</span>
+            </div>
+
+            <div class="card-actions">
+              <a href="{{ url_for('edit_card', card_id=card.id) }}" class="btn-sm btn-edit-sm">Edit</a>
+              <form method="POST" action="{{ url_for('delete_card', card_id=card.id) }}" style="display: inline;" 
+                    onsubmit="return confirm('Delete this card?')">
+                <button type="submit" class="btn-sm btn-delete-sm">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="emoji">💳</span>
+        <h3 style="margin-bottom: 0.5rem;">No cards saved yet</h3>
+        <p>Browse templates and create your first invitation!</p>
+        <a href="{{ url_for('templates_gallery') }}" class="btn-primary mt-2">Browse Templates</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="profile-section">
+    <h2 class="profile-section-title">⭐ Your Reviews</h2>
+
+    {% if reviews %}
+      <div class="profile-grid">
+        {% for review in reviews %}
+          <div class="profile-review card">
+            <div class="rating-stars">★ {{ "%.1f"|format(review.rating|float) }}</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem;">
+              {{ review.template.name if review.template else 'Template' }}
+            </div>
+            <p style="margin-bottom: 0.75rem; line-height: 1.5;">{{ review.comment }}</p>
+            <div style="font-size: 0.85rem; color: #888;">
+              {{ review.created_at.strftime('%d %b %Y') }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="emoji">⭐</span>
+        <h3 style="margin-bottom: 0.5rem;">No reviews yet</h3>
+        <p>Share your feedback on templates you've used!</p>
+      </div>
+    {% endif %}
+  </section>
+
+</div>
 {% endblock %}

@@ -4,12 +4,22 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import os
+import uuid
 from datetime import datetime
 from functools import wraps
 import random
 
 app = Flask(__name__)
+
+# Production-safe upload directory
+UPLOAD_FOLDER = 'uploads/profile_pics'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+os.makedirs(os.path.join(app.static_folder or 'static', UPLOAD_FOLDER), exist_ok=True)
 
 app.secret_key = "super-secret-cardhub-key"
 
@@ -21,6 +31,54 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+def datetimefilter(value, fmt='%Y-%m-%d %H:%M:%S'):
+    """Jinja2 filter to format datetime objects."""
+    if value is None:
+        return ''
+    return value.strftime(fmt)
+
+def ago(value):
+    """Jinja2 filter to show relative time like '2 years ago'."""
+    from datetime import datetime, timedelta
+    
+    if value is None:
+        return 'Unknown'
+    
+    # Handle if value is already formatted string from datetimefilter
+    if isinstance(value, str):
+        try:
+            value = datetime.strptime(value, '%Y-%m-%d')
+        except ValueError:
+            return 'Unknown'
+    
+    now = datetime.now()
+    delta = now - value
+    
+    if delta.total_seconds() < 60:
+        return "Just now"
+    elif delta.total_seconds() < 3600:
+        minutes = int(delta.total_seconds() / 60)
+        return f"{minutes} min ago"
+    elif delta.days < 1:
+        hours = int(delta.total_seconds() / 3600)
+        return f"{hours}h ago"
+    elif delta.days < 7:
+        return f"{delta.days} days ago"
+    elif delta.days < 30:
+        weeks = delta.days // 7
+        return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+    elif delta.days < 365:
+        months = delta.days // 30
+        return f"{months} month{'s' if months > 1 else ''} ago"
+    else:
+        years = delta.days // 365
+        return f"{years} year{'s' if years > 1 else ''} ago"
+
+# Register filters
+app.jinja_env.filters['datetimefilter'] = datetimefilter
+app.jinja_env.filters['ago'] = ago
+
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -29,7 +87,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    avatar_style = db.Column(db.String(50), nullable=True, default="avataaars")
+    profile_pic = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     reviews = db.relationship("Review", backref="user", lazy=True)
@@ -133,7 +191,6 @@ REVIEW_SNIPPETS = [
     "Simple and modern, just what I needed.",
     "Fonts and spacing look very premium.",
     "Great for last-minute invites.",
-    "So much better than typing in Word.",
 ]
 
 REVIEW_NAMES = [
@@ -572,20 +629,111 @@ def editor(template_id):
     tpl = Template.query.get_or_404(template_id)
     return render_template("editor.html", template=tpl)
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
     user = current_user()
     if request.method == "POST":
-        user.username = request.form.get("username")
-        user.email = request.form.get("email")
-        user.avatar_style = request.form.get("avatar_style", "avataaars")
 
-        db.session.commit()
-        flash("Profile updated successfully!", "success")
-        return redirect(url_for("profile"))
+        # REMOVE PROFILE  PIC (from same form)
+        if request.form.get("remove_pic"):
+            if user.profile_pic:
+                filepath = os.path.join(app.static_folder or 'static', app.config['UPLOAD_FOLDER'], user.profile_pic)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            user.profile_pic = None
+            db.session.commit()
+            flash("Profile picture removed.", "success")
+            return redirect(url_for("edit_profile"))
+        
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "").strip()
+        
+        if not username or not email:
+            flash("Username and email are required.", "error")
+            return render_template("edit_profile.html", user=user)
+
+        # Check for duplicates before updating
+        if username != user.username:
+            if User.query.filter_by(username=username).first():
+                flash("Username already taken.", "error")
+                return render_template("edit_profile.html", user=user)
+        
+        if email != user.email:
+            if User.query.filter_by(email=email).first():
+                flash("Email already registered.", "error")
+                return render_template("edit_profile.html", user=user)
+
+        try:
+            # Update basic fields
+            user.username = username
+            user.email = email
+
+            # PASSWORD UPDATE
+            if password:
+                if len(password) < 6:
+                    flash("Password must be at least 6 characters.", "error")
+                    return render_template("edit_profile.html", user=user)
+                
+                user.password_hash = generate_password_hash(password)
+            
+            # Handle profile picture upload
+            file = request.files.get("profile_pic")
+
+            # FILE TYPE VALIDATION
+            if file and file.filename:
+                if not allowed_file(file.filename):
+                    flash("Invalid file type. Allowed types: png, jpg, jpeg, gif, webp.", "error")
+                    return render_template("edit_profile.html", user=user)
+                
+            # UPLOAD
+            if file and file.filename and allowed_file(file.filename):
+                
+                # DELETE OLD IMAGE
+                if user.profile_pic:
+                    old_filepath = os.path.join(app.static_folder or 'static', app.config['UPLOAD_FOLDER'], user.profile_pic)
+                    if os.path.exists(old_filepath):
+                        os.remove(old_filepath)
+                         
+                filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+                filepath = os.path.join(app.static_folder or 'static', app.config['UPLOAD_FOLDER'], filename)
+                
+                file.save(filepath)
+                user.profile_pic = filename
+            
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+            return redirect(url_for("profile"))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash("Error updating profile. Please try again.", "error")
+            return render_template("edit_profile.html", user=user)
 
     return render_template("edit_profile.html", user=user)
+
+
+@app.route("/remove-profile-pic", methods=["POST"])
+@login_required
+def remove_profile_pic():
+    user = current_user()
+    try:
+        # Delete existing file if exists
+        if user.profile_pic:
+            filepath = os.path.join(app.static_folder or 'static', app.config['UPLOAD_FOLDER'], user.profile_pic)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        user.profile_pic = None
+        db.session.commit()
+        flash("Profile picture removed successfully.", "success")
+    except Exception:
+        flash("Error removing picture.", "error")
+    
+    return redirect(url_for("edit_profile"))
 
 
 @app.route("/edit-card/<int:card_id>")
@@ -771,22 +919,20 @@ def add_review(template_id):
     return redirect(url_for("template_detail", template_id=template_id))
 
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     user = current_user()
+
     cards = Card.query.filter_by(user_id=user.id).order_by(Card.created_at.desc()).all()
-    # Load template relationship for each card to avoid errors
+
     for card in cards:
         if card.template_id:
             card.template = db.session.get(Template, card.template_id)
+
     user_reviews = Review.query.filter_by(user_id=user.id).order_by(Review.created_at.desc()).all()
-    return render_template(
-        "profile.html",
-        user=user,
-        cards=cards,
-        reviews=user_reviews,
-    )
+
+    return render_template("profile.html", user=user, cards=cards, reviews=user_reviews)
 
 
 if __name__ == "__main__":
