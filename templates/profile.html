@@ -1,147 +1,278 @@
 {% extends "base.html" %}
-{% block title %}Your Profile – CardHub{% endblock %}
+{% block title %}My Profile - CardHub{% endblock %}
+
+{% block head_extra %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Great+Vibes&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* --- MASTER PROFILE UI --- */
+  .profile-page { padding: 40px 0 80px; background: #f8fafc; min-height: 100vh; font-family: 'Poppins', sans-serif; }
+  .profile-layout { display: grid; grid-template-columns: 320px 1fr; gap: 40px; align-items: start; }
+
+  /* Sidebar Modern Glassmorphism */
+  .profile-sidebar-card {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 24px; padding: 35px 25px; color: white;
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2); text-align: center; margin-bottom: 24px;
+  }
+  .profile-avatar-circle {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50% !important; /* Forces circle */
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden; /* CRITICAL: Clips square image corners */
+    position: relative;
+  }
+
+  .profile-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* CRITICAL: Prevents stretching/squishing */
+    display: block;
+  }
+  .stat-pill { background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); }
+
+  /* Navigation Shortcuts */
+  .shortcut-card { background: white; border-radius: 24px; padding: 25px; border: 1px solid #eef2ff; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+  .shortcut-link {
+    display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+    background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px;
+    text-decoration: none; color: #475569; margin-bottom: 10px; transition: 0.3s; font-size: 0.9rem;
+  }
+  .shortcut-link:hover { transform: translateX(5px); color: #6366f1; border-color: #6366f1; background: white; }
+
+  /* Premium Card Display */
+  .premium-saved-card {
+    background: white; border-radius: 22px; overflow: hidden;
+    border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+    transition: 0.3s ease; position: relative;
+  }
+  .premium-saved-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); }
+
+  /* --- COMPACT THUMBNAIL ENGINE --- */
+  .showcase-area {
+    background-color: #f1f5f9; 
+    background-image: radial-gradient(#cbd5e1 0.8px, transparent 0.8px);
+    background-size: 20px 20px; 
+    padding: 20px; /* Reduced padding */
+    position: relative;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 360px; /* Reduced from 440px to trim top/bottom white space */
+    overflow: hidden;
+  }
+
+  .envelope-backdrop {
+    position: absolute; 
+    top: 15%; /* Pushed down slightly to reduce top white space */
+    left: 14%; /* Increased from 8% to hug the card tighter from sides */
+    right: 14%; 
+    bottom: -20px; 
+    background: #ffffff; 
+    border-radius: 12px 12px 0 0; 
+    z-index: 1; 
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.02), 0 5px 15px rgba(0,0,0,0.03);
+  }
+
+  .paper-thumbnail-container {
+    position: relative;
+    width: 285px; 
+    height: 403px; 
+    z-index: 2;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    border-radius: 2px;
+    /* Scale the container itself slightly if it still feels too big */
+    transform: scale(0.9); 
+  }
+
+  .paper-scaled-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 380px;   
+    height: 537px;  
+    transform: scale(0.75); 
+    transform-origin: top left;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white; padding: 14px 28px; border-radius: 14px; text-decoration: none; font-weight: 600;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); transition: 0.3s;
+    border: none; cursor: pointer;
+  }
+  .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3); }
+
+  /* --- CUSTOM MODAL STYLES (Replaces ugly browser popup) --- */
+  .custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+    display: none; justify-content: center; align-items: center; z-index: 9999;
+  }
+  .custom-modal {
+    background: white; border-radius: 24px; padding: 35px; max-width: 400px; width: 90%;
+    text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: translateY(20px); transition: 0.3s ease;
+  }
+  .custom-modal.active { transform: translateY(0); }
+
+  @media (max-width: 992px) { .profile-layout { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
+<div id="deleteModal" class="custom-modal-overlay">
+  <div class="custom-modal">
+    <div style="font-size: 3rem; margin-bottom: 15px;">🗑️</div>
+    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #1e293b;">Delete Design?</h3>
+    <p style="color: #64748b; margin-bottom: 25px;">Are you sure you want to remove this masterpiece? This action cannot be undone.</p>
+    <div style="display: flex; gap: 12px;">
+      <button onclick="closeDeleteModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; background: white; font-weight: 600; cursor: pointer;">Cancel</button>
+      <form id="confirmDeleteForm" method="POST" action="" style="flex: 1;">
+        <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; background: #ef4444; color: white; border: none; font-weight: 600; cursor: pointer;">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
 
-  <!-- PROFILE HEADER -->
-  <section class="profile-hero">
-
-  <!-- TOP BAR -->
-  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap;">
-
-    <!-- LEFT: AVATAR + INFO -->
-    <div class="d-flex align-center gap-2" style="flex-wrap: wrap;">
+<section class="profile-page">
+  <div class="container">
+    <div class="profile-layout">
       
-      {% if user.profile_pic %}
-        <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}" 
-             alt="{{ user.username }}" class="profile-avatar">
-      
-             {% else %}
-             <div class="profile-avatar text-white"
-                  style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); font-size: 2rem; font-weight: bold; display:flex; align-items:center; justify-content:center; line-height:1;">
-                  {{ user.username[0]|upper if user.username else 'U' }}
+      <aside>
+        <div class="profile-sidebar-card">
+          <div class="profile-avatar-circle">
+            {% if user.profile_pic %}
+              <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}" style="width: 100%; height: 100%; object-fit: cover" />
+            {% else %} 
+              {{ user.username[0]|upper }} 
+            {% endif %}
+          </div>
+          <h2 style="margin: 0; font-size: 1.6rem">{{ user.username }}</h2>
+          <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px">{{ user.email }}</p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 25px 0;">
+            <div class="stat-pill">
+              <span style="font-size: 1.3rem; font-weight: 700; display: block">{{ cards|length }}</span>
+              <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 600;">Designs</span>
+            </div>
+            <div class="stat-pill">
+              <span style="font-size: 1.3rem; font-weight: 700; display: block">{{ reviews|length }}</span>
+              <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 600;">Reviews</span>
+            </div>
+          </div>
+          <a href="{{ url_for('edit_profile') }}" class="btn-gradient" style="display: block; padding: 13px; background: white; color: #6366f1; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Edit Profile</a>
+        </div>
+
+        <div class="shortcut-card">
+          <h3 style="font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 15px; font-weight: 700; letter-spacing: 1px;">Shortcuts</h3>
+          <a href="{{ url_for('templates_gallery') }}" class="shortcut-link"><span>🎨</span> Browse Templates</a>
+          <a href="{{ url_for('discover') }}" class="shortcut-link"><span>🔥</span> Discover Trending</a>
+        </div>
+      </aside>
+
+     <main>
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; padding-left: 5px;">
+    <div>
+      <h2 style="font-size: 2.2rem; color: #1e293b; margin: 0; font-weight: 600;">My Designs</h2>
+      <p style="color: #64748b; margin-top: 6px; font-size: 1.05rem">Your creative collection.</p>
+    </div>
+    <a href="{{ url_for('templates_gallery') }}" class="btn-gradient" style="text-decoration: none">+ Create New</a>
+  </div>
+
+  {% if cards %}
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+    {% for card in cards %}
+    <article class="premium-saved-card">
+      <div class="showcase-area">
+        <div class="envelope-backdrop"></div>
+
+        <div class="paper-thumbnail-container">
+          {% set state = card.editor_state | cardhub.from_json %}
+
+          <div class="paper-scaled-content" style="background-color: {{ card.bg_color or '#ffffff' }}; {% if card.bg_image %}background-image: url('{{ card.bg_image }}');{% endif %}">
+            {% if state and state.elements %} 
+              {% for el in state.elements %}
+              <div style="position: absolute; width: 100%; text-align: center; 
+                          top: {{ el.top }}; 
+                          left: {{ el.left }}; 
+                          font-family: {{ el.style.fontFamily if el.style else 'inherit' }}; 
+                          color: {{ el.style.color if el.style else 'inherit' }}; 
+                          font-size: {{ el.style.fontSize if el.style else 'inherit' }}; 
+                          font-weight: {{ el.style.fontWeight if el.style else 'normal' }}; 
+                          font-style: {{ el.style.fontStyle if el.style else 'normal' }};
+                          line-height: 1.2;">
+                {{ el.text }}
               </div>
-              {% endif %}
-      <div>
-        <h1 style="margin:0;">{{ user.username }}</h1>
-        <p style="margin:0; opacity:0.9;">{{ user.email }}</p>
+              {% endfor %} 
+            {% else %}
+              <div style="position: absolute; width: 100%; text-align: center; top: 40%; font-family: 'Poppins';">
+                {{ card.title_text }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
       </div>
 
-    </div>
+      <div style="padding: 20px; background: white; border-top: 1px solid #f1f5f9;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+          <div>
+            <h3 style="font-size: 1rem; color: #1e293b; margin: 0; font-weight: 600;">
+              {{ card.template.name if card.template else 'Untitled Project' }}
+            </h3>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin: 4px 0 0">
+              Last edited {{ card.created_at|ago }}
+            </p>
+          </div>
+          <span style="font-size: 0.6rem; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; color: #64748b; font-weight: 700; text-transform: uppercase;">
+            {{ card.template.category if card.template else 'Invite' }}
+          </span>
+        </div>
 
-    <!-- RIGHT: EDIT BUTTON -->
-    <a href="{{ url_for('edit_profile') }}" class="btn-ghost">
-      ✏️ Edit Profile
-    </a>
-
+        <div style="display: flex; gap: 8px">
+          <a href="{{ url_for('edit_card', card_id=card.id) }}" style="flex: 2; text-align: center; padding: 10px; background: #6366f1; color: white; border-radius: 10px; text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: 0.2s;">Edit</a>
+          <button type="button" onclick="openDeleteModal('{{ url_for('delete_card', card_id=card.id) }}')" style="flex: 1; padding: 10px; background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6; border-radius: 10px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">Delete</button>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
   </div>
-
-  <!-- STATS (RIGHT SIDE HORIZONTAL) -->
-  <div style="display:flex; justify-content:flex-end; margin-top:20px;">
-    
-    <div class="profile-stats-row">
-      <div class="stat-item">
-        <div class="stat-number">{{ cards|length }}</div>
-        <div class="stat-label">Saved Cards</div>
-      </div>
-
-      <div class="stat-item">
-        <div class="stat-number">{{ reviews|length }}</div>
-        <div class="stat-label">Reviews</div>
-      </div>
-
-      <div class="stat-item">
-        <div class="stat-number">{{ user.created_at.strftime('%b %Y') }}</div>
-        <div class="stat-label">Member Since</div>
-      </div>
+  {% else %}
+    {% endif %}
+</main>
     </div>
-
   </div>
-
 </section>
 
-  <!-- SAVED CARDS -->
-  <section class="profile-section">
-    <h2 class="profile-section-title">💳 Saved Cards</h2>
+<script>
+  // MODERN DELETE MODAL LOGIC
+  function openDeleteModal(deleteUrl) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('confirmDeleteForm');
+    form.action = deleteUrl; // Set the specific delete URL for this card
+    modal.style.display = 'flex';
+    setTimeout(() => modal.firstElementChild.classList.add('active'), 10);
+  }
 
-    {% if cards %}
-      <div class="profile-grid">
-        {% for card in cards %}
-          <div class="card">
-            <a href="{{ url_for('edit_card', card_id=card.id) }}" 
-               class="card-compact"
-               style="
-               height: 180px;
-               {% if card.bg_image %}
-                 background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ card.bg_image }}');
-                 background-size: cover;
-                 background-position: center;
-               {% else %}
-                 background: {{ card.bg_color or '#f8f9fa' }};
-               {% endif %}
-               ">
+  function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.firstElementChild.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
+  }
 
-              <div style="position: absolute; inset: 0; padding: 1rem; color: white; display: flex; flex-direction: column; justify-content: center; text-shadow: 0 1px 3px rgba(0,0,0,0.7);">
-                {% if card.label_text %}<div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 0.25rem;">{{ card.label_text }}</div>{% endif %}
-                {% if card.title_text %}<div style="font-size: 1.25rem; margin-bottom: 0.25rem;">{{ card.title_text }}</div>{% endif %}
-                {% if card.line1_text %}<div style="font-size: 1rem; opacity: 0.95;">{{ card.line1_text }}</div>{% endif %}
-                {% if card.line2_text %}<div style="font-size: 1rem; opacity: 0.95;">{{ card.line2_text }}</div>{% endif %}
-              </div>
-            </a>
-
-            <div class="card-meta">
-              <span>{{ card.template.name if card.template else 'Custom' }}</span>
-              <span style="color: #888;">{{ card.created_at.strftime('%d %b') }}</span>
-            </div>
-
-            <div class="card-actions">
-              <a href="{{ url_for('edit_card', card_id=card.id) }}" class="btn-sm btn-edit-sm">Edit</a>
-              <form method="POST" action="{{ url_for('delete_card', card_id=card.id) }}" style="display: inline;" 
-                    onsubmit="return confirm('Delete this card?')">
-                <button type="submit" class="btn-sm btn-delete-sm">Delete</button>
-              </form>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <span class="emoji">💳</span>
-        <h3 style="margin-bottom: 0.5rem;">No cards saved yet</h3>
-        <p>Browse templates and create your first invitation!</p>
-        <a href="{{ url_for('templates_gallery') }}" class="btn-primary mt-2">Browse Templates</a>
-      </div>
-    {% endif %}
-  </section>
-
-  <!-- REVIEWS -->
-  <section class="profile-section">
-    <h2 class="profile-section-title">⭐ Your Reviews</h2>
-
-    {% if reviews %}
-      <div class="profile-grid">
-        {% for review in reviews %}
-          <div class="profile-review card">
-            <div class="rating-stars">★ {{ "%.1f"|format(review.rating|float) }}</div>
-            <div style="font-size: 1.1rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem;">
-              {{ review.template.name if review.template else 'Template' }}
-            </div>
-            <p style="margin-bottom: 0.75rem; line-height: 1.5;">{{ review.comment }}</p>
-            <div style="font-size: 0.85rem; color: #888;">
-              {{ review.created_at.strftime('%d %b %Y') }}
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <span class="emoji">⭐</span>
-        <h3 style="margin-bottom: 0.5rem;">No reviews yet</h3>
-        <p>Share your feedback on templates you've used!</p>
-      </div>
-    {% endif %}
-  </section>
-
-</div>
+  // Close modal if clicking background
+  window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target == modal) closeDeleteModal();
+  }
+</script>
 {% endblock %}

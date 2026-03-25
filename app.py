@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
 import uuid
+import json
 from datetime import datetime
 from functools import wraps
 import random
@@ -78,7 +79,17 @@ def ago(value):
 app.jinja_env.filters['datetimefilter'] = datetimefilter
 app.jinja_env.filters['ago'] = ago
 
+def from_json_filter(value):
+    """Jinja2 filter to safely parse JSON strings."""
+    import json
+    if value:
+        try:
+            return json.loads(value)
+        except:
+            return {}
+    return {}
 
+app.jinja_env.filters['cardhub.from_json'] = from_json_filter
 
 class User(db.Model):
     __tablename__ = "users"
@@ -125,9 +136,10 @@ class Card(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     template_id = db.Column(db.Integer, db.ForeignKey("templates.id"), nullable=False)
-    title_text = db.Column(db.String(200), nullable=False)
-    line1_text = db.Column(db.String(200), nullable=False)
-    line2_text = db.Column(db.String(200), nullable=False)
+    title_text = db.Column(db.String(200), nullable=True) 
+    line1_text = db.Column(db.String(200), nullable=True)
+    line2_text = db.Column(db.String(200), nullable=True)
+    
     label_text = db.Column(db.String(80), nullable=True)
     subtitle_text = db.Column(db.String(200), nullable=True)
     date_text = db.Column(db.String(200), nullable=True)
@@ -152,6 +164,7 @@ class Card(db.Model):
     title_top = db.Column(db.Integer, nullable=True, default=130)
     line1_top = db.Column(db.Integer, nullable=True, default=230)
     line2_top = db.Column(db.Integer, nullable=True, default=300)
+    editor_state = db.Column(db.Text, nullable=True)
 
 
 class Review(db.Model):
@@ -639,7 +652,7 @@ def edit_profile():
     if request.method == "POST":
 
         # REMOVE PROFILE  PIC (from same form)
-        if request.form.get("remove_pic"):
+        if request.form.get("remove_pic") == "1":
             if user.profile_pic:
                 filepath = os.path.join(app.static_folder or 'static', app.config['UPLOAD_FOLDER'], user.profile_pic)
                 if os.path.exists(filepath):
@@ -766,114 +779,64 @@ def delete_card(card_id):
 def save_card(template_id):
     tpl = Template.query.get_or_404(template_id)
     
-    # Handle GET request - redirect to editor
     if request.method == "GET":
         return redirect(url_for("editor", template_id=template_id))
     
-    # Check if we're updating an existing card
+    user_id = session["user_id"]
     card_id = request.form.get("card_id")
-    existing_card = None
-    if card_id:
-        existing_card = Card.query.filter_by(id=card_id, user_id=session["user_id"]).first()
     
-    # Handle POST request - save the card
-    title = request.form.get("title", tpl.title_text)
-    line1 = request.form.get("line1", tpl.line1_text)
-    line2 = request.form.get("line2", tpl.line2_text)
-    label = request.form.get("label", "Custom invitation")
-    bg = request.form.get("bg", tpl.bg_color)
-    
-    # Get style values from form
-    font_family = request.form.get("font_family", "")
-    title_size = request.form.get("title_size", 50)
-    title_color = request.form.get("title_color", "#667eea")
-    body_size = request.form.get("body_size", 18)
-    body_color = request.form.get("body_color", "#cccccc")
-    label_color = request.form.get("label_color", "#667eea")
-    line1_color = request.form.get("line1_color", "#cccccc")
-    line2_color = request.form.get("line2_color", "#cccccc")
-    text_bold = request.form.get("text_bold", "0")
-    text_italic = request.form.get("text_italic", "0")
+    editor_state_json = request.form.get("editor_state", "{}")
+    bg_color = request.form.get("bg_color", "#f0f0f0")
     bg_image = request.form.get("bg_image", "")
     
-    # Get text positions
-    label_top = request.form.get("label_top", 70)
-    title_top = request.form.get("title_top", 130)
-    line1_top = request.form.get("line1_top", 230)
-    line2_top = request.form.get("line2_top", 300)
+    try:
+        state = json.loads(editor_state_json) if editor_state_json else {}
+    except:
+        state = {}
     
-    # Convert to integers where needed
-    try:
-        title_size = int(title_size) if title_size else 50
-    except ValueError:
-        title_size = 50
-    try:
-        body_size = int(body_size) if body_size else 18
-    except ValueError:
-        body_size = 18
-    try:
-        label_top = int(label_top) if label_top else 70
-    except ValueError:
-        label_top = 70
-    try:
-        title_top = int(title_top) if title_top else 130
-    except ValueError:
-        title_top = 130
-    try:
-        line1_top = int(line1_top) if line1_top else 230
-    except ValueError:
-        line1_top = 230
-    try:
-        line2_top = int(line2_top) if line2_top else 300
-    except ValueError:
-        line2_top = 300
-    
-    if existing_card:
-        # Update existing card
-        existing_card.title_text = title
-        existing_card.line1_text = line1
-        existing_card.line2_text = line2
-        existing_card.label_text = label
-        existing_card.bg_color = bg
-        existing_card.font_family = font_family
-        existing_card.title_size = title_size
-        existing_card.title_color = title_color
-        existing_card.body_size = body_size
-        existing_card.body_color = body_color
-        existing_card.label_color = label_color
-        existing_card.line1_color = line1_color
-        existing_card.line2_color = line2_color
-        existing_card.text_bold = 1 if text_bold == "1" else 0
-        existing_card.text_italic = 1 if text_italic == "1" else 0
-        existing_card.bg_image = bg_image if bg_image else None
-        db.session.commit()
-        flash("Card updated successfully!", "success")
+    if card_id:
+        card = Card.query.filter_by(id=card_id, user_id=user_id).first_or_404()
     else:
-        # Create new card
-        card = Card(
-            user_id=session["user_id"],
-            template_id=tpl.id,
-            title_text=title,
-            line1_text=line1,
-            line2_text=line2,
-            label_text=label,
-            bg_color=bg,
-            font_family=font_family,
-            title_size=title_size,
-            title_color=title_color,
-            body_size=body_size,
-            body_color=body_color,
-            label_color=label_color,
-            line1_color=line1_color,
-            line2_color=line2_color,
-            text_bold=1 if text_bold == "1" else 0,
-            text_italic=1 if text_italic == "1" else 0,
-            bg_image=bg_image if bg_image else None,
-        )
+        card = Card(user_id=user_id, template_id=tpl.id)
         db.session.add(card)
-        db.session.commit()
-        flash("Card saved to your profile.", "success")
     
+    card.editor_state = editor_state_json
+    card.bg_color = bg_color
+    card.bg_image = bg_image
+    
+    # --- SAFE ELEMENT MAPPING ---
+    elements = state.get('elements', [])
+    
+    # We use .get() with a default of "" to prevent None errors
+    # Element 0: Label
+    card.label_text = elements[0].get('text', '') if len(elements) > 0 else (tpl.label_text or "")
+    
+    # Element 1: Title
+    card.title_text = elements[1].get('text', '') if len(elements) > 1 else (tpl.title_text or "")
+    
+    # Element 2: Line 1
+    card.line1_text = elements[2].get('text', '') if len(elements) > 2 else (tpl.line1_text or "")
+    
+    # Element 3: Line 2
+    card.line2_text = elements[3].get('text', '') if len(elements) > 3 else (tpl.line2_text or "")
+
+    # Helper for style numeric values
+    def clean_val(val, default=0):
+        try:
+            return int(str(val).replace('px', '').replace('%', '').split('.')[0])
+        except:
+            return default
+
+    # Sync styles from Title element (Element 1)
+    if len(elements) > 1:
+        style = elements[1].get('style', {})
+        card.font_family = style.get('fontFamily', 'Playfair Display')
+        card.title_size = clean_val(style.get('fontSize'), 50)
+        card.title_color = style.get('color', '#ffffff')
+        card.title_top = clean_val(elements[1].get('top'), 130)
+
+    db.session.commit()
+    flash("Design saved successfully!", "success")
     return redirect(url_for("profile"))
 
 
@@ -937,3 +900,4 @@ def profile():
 
 if __name__ == "__main__":
     app.run(debug=True)
+

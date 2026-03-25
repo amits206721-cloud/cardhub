@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+  
+  <style>
+  /* GLOBAL OVERRIDE to enforce sharp physical paper edges everywhere */
+  .card-canvas, 
+  .card-inner, 
+  .card-inner-border {
+      border-radius: 0 !important;
+  }
+</style>
+
 <head>
 <meta charset="utf-8"/>
 <title>{% block title %}CardHub – Invitation Maker{% endblock %}</title>
@@ -11,7 +21,7 @@
 
 <body>
 
-{% set is_editor = request.endpoint in ['editor', 'edit_card'] %}
+{% set is_editor = request.endpoint in ['editor', 'edit_card', 'template_detail'] %}
 
 <!-- ================= NAVBAR ================= -->
 {% if not is_editor %}
@@ -137,6 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 {% block scripts %}{% endblock %}
 

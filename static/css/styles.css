@@ -262,9 +262,9 @@ a:hover {
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   flex-shrink: 0;
 
-  display: flex;               /* 🔥 CENTER FIX */
-  align-items: center;         /* vertical center */
-  justify-content: center;     /* horizontal center */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
@@ -328,12 +328,70 @@ a:hover {
   margin-bottom: 0.5rem;
 }
 
+.card-preview {
+  aspect-ratio: 3/4;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  font-family: 'Playfair Display', serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-preview:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.card-canvas {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 3 / 4;
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.18),
+    0 10px 24px rgba(15, 23, 42, 0.1);
+  margin: 0 auto;
+  background-color: #f0f0f0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.card-inner-border {
+  position: absolute;
+  inset: 12px;
+  border-radius: 22px;
+  border: 1.5px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.card-inner {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+.card-canvas[data-state] .editable-text {
+  pointer-events: none;
+  cursor: default;
+}
+
 .card-compact {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   transition: all 0.3s;
-  height: 200px;
   position: relative;
   text-decoration: none;
   display: block;
@@ -587,6 +645,101 @@ a:hover {
 .rounded-full { border-radius: 50%; }
 
 .shadow { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+#floating-toolbar {
+  position: fixed;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+#floating-toolbar.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#floating-toolbar button {
+  height: 38px;
+  min-width: 38px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: #eff4ff;
+  color: #274690;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+#floating-toolbar button:hover {
+  background: #dbe8ff;
+  transform: translateY(-1px);
+}
+
+#floating-toolbar button:active {
+  transform: translateY(0);
+}
+
+#floating-toolbar input[type="color"],
+#floating-toolbar input[type="range"] {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+
+#floating-toolbar input[type="range"] {
+  width: 90px;
+  height: 28px;
+}
+
+/* RESIZE PREP */
+/* RESIZE HANDLES - PHASE 2 PREP */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #667eea;
+  border-radius: 3px;
+  cursor: se-resize;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 100;
+  transition: all 0.15s;
+}
+
+.resize-handle:hover {
+  background: #5a67d8;
+  transform: scale(1.2);
+}
+
+.active-element .resize-handle {
+  display: block !important;
+}
+
+.editable-text.resizing {
+  outline: 3px solid #667eea !important;
+  outline-offset: 6px !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3) !important;
+}
 .shadow-lg { box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
 
 .bg-white { background: white; }
@@ -642,4 +795,50 @@ a:hover {
 
 .profile-stats-row .stat-item {
   min-width: 100px;
+}
+/* ==================== EDITOR UX UPGRADE ==================== */
+
+.editable-text {
+  position: absolute;
+  max-width: calc(100% - 12px);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.2;
+  cursor: move;
+  padding: 4px 6px;
+  border-radius: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+  transform: translateZ(0);
+  will-change: left, top;
+  transition: box-shadow 0.15s ease, outline-color 0.15s ease, background 0.15s ease;
+}
+
+#cardCanvas .editable-text:hover:not([contenteditable="true"]) {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.editable-text.active-element {
+  outline: 2px dashed #667eea;
+  outline-offset: 4px;
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.18);
+}
+
+.editable-text.dragging {
+  cursor: grabbing !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  z-index: 1000 !important;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22) !important;
+}
+
+.editable-text[contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text !important;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.editable-text[contenteditable="true"]:focus {
+  outline: 2px solid #667eea;
 }

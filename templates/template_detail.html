@@ -1,180 +1,285 @@
 {% extends 'base.html' %}
-{% block title %}Edit template – CardHub{% endblock %}
+{% block title %}Edit Template - CardHub{% endblock %}
 
 {% block head_extra %}
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Great+Vibes&family=Poppins:wght@400;600&family=Dancing+Script:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lobster&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-#card-preview .editable-text {
+  /* --- PREMIUM EDITOR CANVAS UPGRADE --- */
+  .editor-showcase-area {
+    position: relative;
+    background-color: #f0f7f6;
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 20px 20px;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    border: 1px solid #eee;
+    overflow: hidden;
+    min-height: 600px;
+  }
+
+  .envelope-wrapper {
+    position: relative;
+    width: 380px; 
+    height: 537px;
+    margin-top: 40px;
+  }
+
+  .editor-envelope-backdrop {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 85%;
-    text-align: center;
-    white-space: normal;
-}
+    top: 10%; 
+    left: -6%; 
+    right: -6%;
+    bottom: -60px; 
+    background: #ffffff;
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.03), 0 -4px 15px rgba(0,0,0,0.05);
+    z-index: 1;
+  }
+
+  #downloadablePaper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.15), 0 8px 15px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+    overflow: hidden;
+    display: block !important;
+  }
+  
+  /* BRUTAL OVERRIDES: Kills the JavaScript constraints causing white borders */
+  #cardCanvas, 
+  #cardInner, 
+  .card-inner-border {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    aspect-ratio: auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  /* --- UI POLISH UPGRADES FOR SIDEBAR --- */
+  .tools-sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .tools-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .tools-sidebar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  .tools-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .custom-file-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .custom-file-upload:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #334155;
+  }
+  
+  .modern-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+  }
+  
+  .tool-card {
+    background: white; 
+    padding: 24px; 
+    border-radius: 12px; 
+    border: 1px solid #f1f5f9; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    margin-bottom: 20px;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<script>
+  // MATCHES THE EDITOR STRUCTURE, BUT ONLY PULLS FROM TEMPLATE DATA
+  window.cardData = {
+    id: null,
+    label_text: {{ (template.label_text or '') | tojson }},
+    title_text: {{ (template.title_text or '') | tojson }},
+    line1_text: {{ (template.line1_text or '') | tojson }},
+    line2_text: {{ (template.line2_text or '') | tojson }},
+    bg_color: {{ (template.bg_color or '#f0f0f0') | tojson }},
+    bg_image: {{ (template.bg_image or '') | tojson }},
+    font_family: {{ 'Playfair Display' | tojson }},
+    title_size: 50,
+    title_color: {{ '#ffffff' | tojson }},
+    body_size: 18,
+    body_color: {{ '#ffffff' | tojson }},
+    label_color: {{ '#ffffff' | tojson }},
+    line1_color: {{ '#ffffff' | tojson }},
+    line2_color: {{ '#ffffff' | tojson }},
+    text_bold: 0,
+    text_italic: 0,
+    label_top: 70,
+    title_top: 130,
+    line1_top: 230,
+    line2_top: 300,
+    editor_state: null
+  };
+</script>
+
 <section style="max-width: 1400px; margin: 0 auto; padding: 40px 20px 80px;">
-
-  <!-- TOP BAR -->
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-    {% if card %}
-      <a href="{{ url_for('profile') }}" style="color: #666; font-size: 0.9rem;">← Back to Profile</a>
-    {% else %}
-      <a href="{{ url_for('templates_gallery') }}" style="color: #666; font-size: 0.9rem;">← Back to Templates</a>
-    {% endif %}
+    <a href="{{ url_for('templates_gallery') }}" style="color: #666; font-size: 0.9rem; text-decoration: none; font-weight: 500;">← Back to Templates</a>
 
-    <h1 style="font-size: 1.5rem; color: #667eea;">Design Studio</h1>
+    <h1 style="font-size: 1.5rem; color: #667eea; font-weight: 600;">Design Studio</h1>
 
-    <button onclick="downloadCard()" type="button" style="padding: 10px 24px; border-radius: 25px; background: #667eea; color: white; font-weight: 600; border: none; cursor: pointer;">
-      Download
+    <button onclick="downloadCard()" type="button" style="padding: 10px 24px; border-radius: 25px; background: white; color: #667eea; font-weight: 600; border: 2px solid #667eea; cursor: pointer; transition: 0.2s;">
+      Download Image
     </button>
   </div>
 
-
-  <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 60px;">
-
-    <!-- WORKSPACE -->
-    <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 40px; border-radius: 16px; border: 1px solid #eee;">
-      <div id="card-preview" style="aspect-ratio: 3/4; width: 420px; border-radius: 16px; position: relative; overflow: hidden; border: 1px solid #ddd; display: flex; flex-direction: column; align-items: center;
-        {% if template.bg_image %}
-          background-image: url('{{ template.bg_image }}'); background-size: cover; background-position: center;
-        {% else %}
-          background: {{ card.bg_color if card else template.bg_color }};
-        {% endif %}
-        font-family: 'Playfair Display', serif;
-      ">
-        {% if template.bg_image %}
-        <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);"></div>
-        {% endif %}
-
-        <!-- Inner Frame -->
-        <div style="position: absolute; inset: 20px; border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.3); pointer-events: none;"></div>
-
-        <!-- TEXT LAYERS -->
-        <div id="preview-label" class="editable-text" style="top: 70px; color: #667eea; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
-          {{ card.label_text if card else (template.label_text if template.label_text else template.category) }}
+  <div style="display: grid; grid-template-columns: 1fr 420px; gap: 40px;">
+    
+    <div class="editor-showcase-area">
+      <div class="envelope-wrapper">
+        <div class="editor-envelope-backdrop"></div>
+        
+        <div class="editor-template-paper" id="downloadablePaper">
+          <div class="card-canvas" id="cardCanvas" style="background-color: {{ template.bg_color or '#f0f0f0' }}">
+            <div class="card-inner-border"></div>
+            <div class="card-inner" id="cardInner"></div>
+          </div>
         </div>
-
-        <h2 id="preview-title" class="editable-text" style="top: 130px; font-size: 3rem; color: #667eea; font-family: 'Great Vibes', cursive;">
-          {{ card.title_text if card else template.title_text }}
-        </h2>
-
-        <p id="preview-line1" class="editable-text" style="top: 230px; font-size: 1.1rem; color: #555;">
-          {{ card.line1_text if card else template.line1_text }}
-        </p>
-
-        <p id="preview-line2" class="editable-text" style="top: 300px; font-size: 0.9rem; color: #666;">
-          {{ card.line2_text if card else template.line2_text }}
-        </p>
       </div>
     </div>
 
-
-    <!-- SIDEBAR - EDITING TOOLS -->
-    <div style="height: 85vh; overflow-y: auto; padding-right: 10px;">
+    <div class="tools-sidebar space-y-8" style="height: 85vh; overflow-y: auto; padding-right: 15px;">
       <form method="POST" action="{{ url_for('save_card', template_id=template.id) }}">
+        <input type="hidden" name="bg_color" id="bg-color-input" value="#f0f0f0" />
+        <input type="hidden" name="bg_image" id="bg-image-input" value="" />
+        <input type="hidden" name="editor_state" id="editor-state" value="" />
 
-        {% if card %}
-        <input type="hidden" name="card_id" value="{{ card.id }}">
-        {% endif %}
+        <div class="tool-card">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 16px; font-weight: 600;">Background</h3>
 
-        <!-- TEXT INPUTS -->
-        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
-          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Text</h3>
-
-          <input name="label" id="label-input" class="form-input" style="margin-bottom: 12px;"
-                 value="{{ card.label_text if card else (template.label_text if template.label_text else template.category) }}">
-
-          <input name="title" id="title-input" class="form-input" style="margin-bottom: 12px;"
-                 value="{{ card.title_text if card else template.title_text }}">
-
-          <input name="line1" id="line1-input" class="form-input" style="margin-bottom: 12px;"
-                 value="{{ card.line1_text if card else template.line1_text }}">
-
-          <input name="line2" id="line2-input" class="form-input"
-                 value="{{ card.line2_text if card else template.line2_text }}">
-        </div>
-
-        <!-- TYPOGRAPHY -->
-        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
-          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Typography</h3>
-
-          <select id="font-family" class="form-input" style="margin-bottom: 12px;">
-            <option value="'Playfair Display', serif">Playfair</option>
-            <option value="'Great Vibes', cursive">Great Vibes</option>
-            <option value="'Poppins', sans-serif">Poppins</option>
-            <option value="'Montserrat', sans-serif">Montserrat</option>
-            <option value="'Raleway', sans-serif">Raleway</option>
-            <option value="'Lobster', cursive">Lobster</option>
-          </select>
-
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Title Size</label>
-            <input type="range" id="title-size" min="20" max="80" value="50" style="width: 100%;">
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 0.8rem; color: #475569; display: block; margin-bottom: 8px; font-weight: 500;">Background Color</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="color" id="bg-color" value="#f0f0f0" style="width: 40px; height: 40px; border: none; border-radius: 8px; cursor: pointer; padding: 0; background: transparent;">
+              <span style="font-size: 0.8rem; color: #64748b;">Choose a color</span>
+            </div>
           </div>
 
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Body Size</label>
-            <input type="range" id="body-size" min="12" max="40" value="18" style="width: 100%;">
-          </div>
-
-          <div>
-            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Selected Text Size</label>
-            <input type="range" id="active-size" min="10" max="100" value="20" style="width: 100%;">
-          </div>
-        </div>
-
-        <!-- STYLE -->
-        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
-          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Style</h3>
-
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Text Color</label>
-            <input type="color" id="active-text-color" value="#667eea" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 8px;">
-          </div>
-
-          <div style="display: flex; gap: 20px; padding-top: 8px; font-size: 0.9rem; color: #555;">
-            <label style="display: flex; align-items: center; gap: 6px;">
-              <input type="checkbox" id="bold-toggle"> Bold
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px;">
-              <input type="checkbox" id="italic-toggle"> Italic
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 0.8rem; color: #475569; display: block; margin-bottom: 8px; font-weight: 500;">Background Image</label>
+            <label class="custom-file-upload">
+              <input type="file" id="bg-image" accept="image/*" style="display: none;">
+              <span style="margin-right: 8px;">📷</span> Upload Custom Image
             </label>
           </div>
-        </div>
 
-        <!-- BACKGROUND -->
-        <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
-          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Background</h3>
-
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Background Color</label>
-            <input type="color" id="bg-color" value="{{ card.bg_color if card else template.bg_color }}" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 8px;">
-          </div>
-
-          <div>
-            <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 6px;">Background Image</label>
-            <input type="file" id="bg-image" accept="image/*" style="font-size: 0.9rem; color: #666;">
-          </div>
-        </div>
-
-        <div style="padding-top: 20px;">
-          <button type="submit" style="width: 100%; padding: 14px; border-radius: 25px; background: #667eea; color: white; font-weight: 600; border: none; cursor: pointer; font-size: 1rem;">
-            Save Card
+          <button type="button" id="bg-image-delete" style="width: 100%; padding: 10px; border-radius: 8px; background: #fff1f2; color: #e11d48; font-size: 0.85rem; font-weight: 600; border: 1px solid #ffe4e6; cursor: pointer; margin-top: 4px; transition: 0.2s;">
+            Remove Image
           </button>
         </div>
 
+        <div class="tool-card" id="typography-card">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 16px; font-weight: 600;">Typography</h3>
+          
+          <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="font-size: 0.8rem; color: #475569; font-weight: 500;">Font Size</label>
+              <span id="font-size-display" style="font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">24px</span>
+            </div>
+            <input type="range" id="font-size" min="10" max="100" value="24" style="width: 100%; accent-color: #667eea; cursor: pointer;">
+          </div>
+          
+          <div>
+            <label style="font-size: 0.8rem; color: #475569; display: block; margin-bottom: 8px; font-weight: 500;">Font Family</label>
+            <select id="font-family" class="modern-select" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; color: #334155; outline: none; cursor: pointer;">
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Dancing Script">Dancing Script</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Raleway">Raleway</option>
+              <option value="Lobster">Lobster</option>
+              <option value="Great Vibes">Great Vibes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 16px; font-weight: 600;">Actions</h3>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="button" id="add-text-btn" style="flex: 1; padding: 12px; border-radius: 8px; background: #f1f5f9; color: #475569; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 6px;">
+              <span style="font-size: 1.2rem; line-height: 1;">+</span> Text
+            </button>
+            <button type="button" id="undo-btn" style="flex: 1; padding: 12px; border-radius: 8px; background: #ffffff; color: #64748b; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 6px;">
+              ↩ Undo
+            </button>
+          </div>
+        </div>
+
+        <div style="padding-top: 10px;">
+          <button type="submit" style="width: 100%; padding: 16px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; border: none; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: transform 0.2s;">
+            Save Design
+          </button>
+        </div>
       </form>
     </div>
-
   </div>
-
 </section>
 
+<script>
+  function downloadCard() {
+    const captureArea = document.getElementById('downloadablePaper'); 
+    html2canvas(captureArea, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'my-invitation.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+
+  // Force the background color update visually
+  document.getElementById('bg-color').addEventListener('input', (e) => {
+      document.getElementById('cardCanvas').style.backgroundColor = e.target.value;
+  });
+</script>
 <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
 {% endblock %}
